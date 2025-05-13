@@ -1,5 +1,6 @@
 # cmake file for Raspberry Pi Pico 2 W
 set(PICO_BOARD "pimoroni_badger2350")
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR})
 
 set(MICROPY_PY_LWIP ON)
 set(MICROPY_PY_NETWORK_CYW43 ON)
