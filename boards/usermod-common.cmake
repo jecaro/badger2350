@@ -37,6 +37,9 @@ include(qrcode/micropython/micropython)
 # Sensors & Breakouts
 include(micropython-common-breakouts)
 
+# Driver for Badger RTC
+include(pcf85063a/micropython)
+
 # Utility
 include(adcfft/micropython)
 
