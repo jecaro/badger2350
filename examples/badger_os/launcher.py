@@ -68,6 +68,8 @@ display = badger2350.Badger2350()
 display.set_font("bitmap8")
 display.led(0)
 
+BG = display.create_pen(195, 195, 195)
+
 # Pico Vector
 vector = PicoVector(display.display)
 vector.set_antialiasing(ANTIALIAS_BEST)
@@ -145,7 +147,7 @@ def render():
     global icons_total
     global selected_file
 
-    display.set_pen(display.create_pen(200, 200, 200))
+    display.set_pen(BG)
     display.clear()
     display.set_pen(0)
 
