@@ -3,7 +3,7 @@
 # DESC Badger 2350 Specification & Info
 
 import badger2350
-from badger2350 import WIDTH, HEIGHT
+from badger2350 import WIDTH
 import version
 from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
