@@ -12,10 +12,7 @@ gc.collect()
 WIDTH = badger2350.WIDTH
 HEIGHT = badger2350.HEIGHT
 
-ARROW_THICKNESS = 3
 ARROW_WIDTH = 18
-ARROW_HEIGHT = 14
-ARROW_PADDING = 2
 
 TEXT_PADDING = 4
 TEXT_WIDTH = WIDTH - TEXT_PADDING - TEXT_PADDING - ARROW_WIDTH
@@ -24,7 +21,7 @@ FONTS = ["sans", "gothic", "cursive", "serif"]
 THICKNESSES = [2, 1, 1, 2]
 
 CHEVRON = [[(3.0, -10.0), (-12.33, -25.33), (-7.67, -30.0), (12.33, -10.0),
-                  (-7.67, 10.0), (-12.33, 5.33), (3.0, -10.0)]]
+            (-7.67, 10.0), (-12.33, 5.33), (3.0, -10.0)]]
 
 TITLE_BAR = Polygon()
 TITLE_BAR.rectangle(2, 2, 260, 16, (8, 8, 8, 8))
@@ -41,6 +38,7 @@ for path in CHEVRON:
 # ------------------------------
 #      Drawing functions
 # ------------------------------
+
 
 # Draw arrow at X and Y position and rotate
 def draw_arrow(pos_x, pos_y, rotate=0):
@@ -62,7 +60,7 @@ def draw_frame():
     if state["current_page"] > 0:
         draw_arrow(WIDTH - 6, (HEIGHT // 4), -90)
 
-    draw_arrow(WIDTH - 13, HEIGHT - (HEIGHT // 4) , 89)
+    draw_arrow(WIDTH - 13, HEIGHT - (HEIGHT // 4), 89)
 
     display.set_font("bitmap8")
     display.set_thickness(0)
@@ -75,6 +73,7 @@ def draw_frame():
 # ------------------------------
 #        Program setup
 # ------------------------------
+
 
 # Global variables
 state = {
