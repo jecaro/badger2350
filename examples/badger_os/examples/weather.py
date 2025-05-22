@@ -7,7 +7,6 @@
 
 import badger2350
 import ezwifi
-import pngdec
 import urequests
 from badger2350 import HEIGHT, WIDTH
 from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
@@ -50,8 +49,6 @@ TITLE_BAR.circle(253, 10, 4)
 
 INFO_BOX = Polygon()
 INFO_BOX.rectangle(2, 92, 260, 80, (8, 8, 8, 8))
-
-png = pngdec.PNG(display.display)
 
 
 # Connects to the wireless network. Ensure you have entered your details in secrets.py :).
