@@ -3,13 +3,14 @@
 # DESC Display your images!
 
 import os
+
 import badger2350
-from badger2350 import HEIGHT, WIDTH
-import badger_os
 import jpegdec
 import pngdec
+from badger2350 import HEIGHT, WIDTH
 from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
+import badger_os
 
 TOTAL_IMAGES = 0
 

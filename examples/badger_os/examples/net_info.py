@@ -1,6 +1,6 @@
 import badger2350
-from badger2350 import WIDTH, HEIGHT
 import ezwifi
+from badger2350 import HEIGHT, WIDTH
 from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 # Display Setup

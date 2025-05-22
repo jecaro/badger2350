@@ -17,10 +17,11 @@ Controls:
 import gc
 import random
 import time
-import badger2350
 from collections import namedtuple
-from picographics import PicoGraphics, DISPLAY_BADGER_2350
+
+import badger2350
 from machine import Pin
+from picographics import DISPLAY_BADGER_2350, PicoGraphics
 
 # Button Setup
 btn_a = Pin(12, Pin.IN)
