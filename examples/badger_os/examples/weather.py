@@ -51,17 +51,8 @@ INFO_BOX = Polygon()
 INFO_BOX.rectangle(2, 92, 260, 80, (8, 8, 8, 8))
 
 
-# Connects to the wireless network. Ensure you have entered your details in secrets.py :).
-def connect_handler(_wifi):
-    pass
-
-
-def failed_handler(_wifi):
-    pass
-
-
 # Connects to the wireless network. Ensure you have entered your details in WIFI_CONFIG.py :).
-ezwifi.connect(verbose=True, retries=3, connected=connect_handler, failed=failed_handler)
+ezwifi.connect(verbose=True, retries=3)
 
 
 def get_data():
