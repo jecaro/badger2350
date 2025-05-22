@@ -1,5 +1,5 @@
 # ICON joystick
-# NAME Random Maze
+# NAME Maze
 # DESC Escape the randomly generated mazes!
 
 """
