@@ -1,51 +1,26 @@
 import gc
+import math
 import os
 import time
-import math
-import badger2350
-import badger_os
-import pngdec
-import jpegdec
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
-DEFAULT_ICON = [
-        [(-10.0, 12.5), (10.0, 12.5), (10.0, 7.5), (-10.0, 7.5), (-10.0, 12.5)],
-        [(-10.0, 2.5), (10.0, 2.5), (10.0, -2.5), (-10.0, -2.5), (-10.0, 2.5)],
-        [
-            (-15.0, 22.5),
-            (-16.43, 22.31),
-            (-17.75, 21.71),
-            (-18.52, 21.11),
-            (-19.47, 19.78),
-            (-19.92, 18.46),
-            (-20.0, 17.56),
-            (-20.0, -22.5),
-            (-19.77, -24.05),
-            (-18.82, -25.73),
-            (-17.79, -26.64),
-            (-16.69, -27.21),
-            (-15.06, -27.5),
-            (5.0, -27.5),
-            (20.0, -12.5),
-            (20.0, 17.5),
-            (19.77, 19.04),
-            (19.36, 19.95),
-            (18.55, 21.02),
-            (17.74, 21.68),
-            (16.7, 22.21),
-            (15.06, 22.5),
-            (-15.0, 22.5),
-        ],
-        [
-            (2.5, -10.0),
-            (2.5, -22.5),
-            (-15.0, -22.5),
-            (-15.0, 17.5),
-            (15.0, 17.5),
-            (15.0, -10.0),
-            (2.5, -10.0),
-        ]
-    ]
+import badger2350
+from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
+                        Transform)
+
+import badger_os
+
+ICONS = {
+    "badge": "\uea67",
+    "book_2": "\uf53e",
+    "cloud": "\ue2bd",
+    "description": "\ue873",
+    "help": "\ue887",
+    "wifi": "\ue63e",
+    "image": "\ue3f4",
+    "info": "\ue88e",
+    "format_list_bulleted": "\ue241",
+    "joystick": "\uf5ee"
+}
 
 APP_DIR = "/examples"
 FONT_SIZE = 1
@@ -74,6 +49,9 @@ BG = display.create_pen(195, 195, 195)
 vector = PicoVector(display.display)
 vector.set_antialiasing(ANTIALIAS_BEST)
 t = Transform()
+vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+vector.set_font_align(HALIGN_CENTER)
+vector.set_transform(t)
 
 TITLE_BAR = Polygon()
 TITLE_BAR.rectangle(2, 2, 260, 16, (8, 8, 8, 8))
@@ -81,9 +59,6 @@ TITLE_BAR.circle(253, 10, 4)
 
 SELECTED_BORDER = Polygon()
 SELECTED_BORDER.rectangle(0, 0, 90, 90, (10, 10, 10, 10), 5)
-
-png = pngdec.PNG(display.display)
-jpeg = jpegdec.JPEG(display.display)
 
 state = {
     "page": 0,
@@ -141,7 +116,7 @@ def draw_disk_usage(x):
     display.rectangle(x + 11, 6, 43, 8)
     display.set_pen(15)
     display.rectangle(x + 12, 7, int(41 / 100.0 * f_used), 6)
-    #display.text("{:.2f}%".format(f_used), x + 90, 6, WIDTH, 1.0)
+
 
 def render():
     global icons_total
@@ -166,27 +141,19 @@ def render():
         with open(file) as f:
             header = [f.readline().strip() for _ in range(3)]
 
-            for line in header:
-                if line.startswith("# ICON "):
-                    try:
-                        for path in eval(line[7:]):
-                            icon.path(*path)
+        for line in header:
+            if line.startswith("# ICON "):
+                icon = line[7:].strip()
+                icon = ICONS[icon]
 
-                    except:  # noqa: E722 - eval could barf up all kinds of nonsense
-                        pass
-                else:
-                    # If there's no icon in the file header we'll use the default.
-                    for path in DEFAULT_ICON:
-                        icon.path(*path)
+            if line.startswith("# NAME "):
+                name = line[7:]
 
-                if line.startswith("# NAME "):
-                    name = line[7:]
-
+        vector.set_font_size(20)
         vector.set_transform(t)
+        vector.text(icon, x, y)
         t.translate(x, y)
         t.scale(0.8, 0.8)
-        vector.draw(icon)
-
         # Snap to the last icon if the position isn't available.
         selected_file = min(selected_file, icons_total - 1)
 
@@ -198,8 +165,9 @@ def render():
         t.reset()
 
         display.set_pen(0)
-        w = display.measure_text(name, FONT_SIZE)
-        display.text(name, int(x - (w / 2)), y + 27, WIDTH, FONT_SIZE)
+        vector.set_font_size(16)
+        w = vector.measure_text(name)[2]
+        vector.text(name, int(x - (w / 2)), y + 35)
 
     for i in range(MAX_PAGE):
         x = 253
@@ -216,7 +184,8 @@ def render():
     draw_disk_usage(100)
 
     display.set_pen(3)
-    display.text("badgerOS", 7, 6, WIDTH, 1.0)
+    vector.set_font_size(14)
+    vector.text("BadgerOS", 7, 14)
 
     display.update()
 
@@ -239,7 +208,6 @@ def launch_example(index):
     gc.collect()
 
     badger_os.launch(file)
-
 
 
 def button(pin):
@@ -281,13 +249,12 @@ if exited_to_launcher or not woken_by_button:
 
 display.set_update_speed(badger2350.UPDATE_TURBO)
 
-#render()
+render()
 
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    #display.keepalive()
-
+    # display.keepalive()
 
     if display.pressed(badger2350.BUTTON_A):
         button(badger2350.BUTTON_A)
