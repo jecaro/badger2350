@@ -54,9 +54,9 @@ def draw_arrow(pos_x, pos_y, rotate=0):
 def draw_frame():
     display.set_pen(15)
     display.clear()
-    display.set_pen(12)
+    display.set_pen(2)
     vector.draw(V_BAR)
-    display.set_pen(3)
+    display.set_pen(0)
     if state["current_page"] > 0:
         draw_arrow(WIDTH - 6, (HEIGHT // 4), -90)
 
