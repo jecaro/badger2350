@@ -15,6 +15,7 @@ ICONS = {
     "cloud": "\ue2bd",
     "description": "\ue873",
     "help": "\ue887",
+    "water_full": "\uf6d6",
     "wifi": "\ue63e",
     "image": "\ue3f4",
     "info": "\ue88e",
