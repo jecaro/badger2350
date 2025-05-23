@@ -39,7 +39,7 @@ display.set_update_speed(2)
 vector = PicoVector(display.display)
 vector.set_antialiasing(ANTIALIAS_BEST)
 t = Transform()
-vector.set_font("Roboto-Medium-With-Material-Symbols.af", 40)
+vector.set_font("Roboto-Medium-With-Material-Symbols.af", 35)
 vector.set_font_align(HALIGN_CENTER)
 vector.set_transform(t)
 
