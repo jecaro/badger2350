@@ -2,4 +2,4 @@ mustelid inc
 H. Badger
 RP2040
 2MB Flash
-/badges/badge.jpg
+/badges/badger-mugshot.png

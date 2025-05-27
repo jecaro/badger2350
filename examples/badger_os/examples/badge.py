@@ -23,7 +23,7 @@ DEFAULT_TEXT = """mustelid inc
 H. Badger
 RP2350
 16MB Flash
-/badges/badge.jpg
+/badges/badger-mugshot.png
 """
 
 
