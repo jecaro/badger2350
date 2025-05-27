@@ -50,9 +50,11 @@ TITLE_BAR.circle(253, 10, 4)
 INFO_BOX = Polygon()
 INFO_BOX.rectangle(2, 92, 260, 80, (8, 8, 8, 8))
 
-
-# Connects to the wireless network. Ensure you have entered your details in WIFI_CONFIG.py :).
-ezwifi.connect(verbose=True, retries=3)
+try:
+    # Connects to the wireless network. Ensure you have entered your details in WIFI_CONFIG.py :).
+    ezwifi.connect(verbose=True, retries=3)
+except ValueError:
+    pass
 
 
 def get_data():
@@ -127,8 +129,8 @@ def draw_page():
         display.text(f"Last update: {date}, {time}", 8, 158, WIDTH, 1)
 
     else:
-        display.set_pen(3)
-        display.text("Unable to display weather! Check your network settings in secrets.py", 5, 95, WIDTH - 10, 2)
+        display.set_pen(1)
+        display.text("Unable to display weather! Check your network settings in secrets.py", 5, 107, WIDTH - 10, 2)
 
     display.update()
 

@@ -88,8 +88,10 @@ def failed_handler(_wifi):
     display.update()
 
 
-ezwifi.connect(verbose=True, retries=3, connected=connect_handler, failed=failed_handler)
-
+try:
+    ezwifi.connect(verbose=True, retries=3, connected=connect_handler, failed=failed_handler)
+except ValueError:
+    failed_handler(False)
 
 # Call halt in a loop, on battery this switches off power.
 # On USB, the app will exit when A+C is pressed because the launcher picks that up.
