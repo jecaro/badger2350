@@ -137,7 +137,7 @@ def render():
         file = f"{APP_DIR}/{label}.py"
 
         name = label
-        icon = Polygon()
+        icon = ICONS["description"]
 
         with open(file) as f:
             header = [f.readline().strip() for _ in range(3)]
