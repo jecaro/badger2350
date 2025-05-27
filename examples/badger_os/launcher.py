@@ -80,7 +80,7 @@ MAX_PER_PAGE = MAX_PER_ROW * 2
 WIDTH = 264
 
 # index for the currently selected file on the page
-selected_file = 1
+selected_file = 0
 
 # Number of icons on the current page
 icons_total = 0
