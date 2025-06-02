@@ -24,9 +24,9 @@ ICONS = {
 }
 
 APP_DIR = "/examples"
-FONT_SIZE = 1
 
 changed = False
+first_render = False
 exited_to_launcher = False
 woken_by_button = badger2350.woken_by_button()  # Must be done before we clear_pressed_to_wake
 
@@ -62,7 +62,7 @@ SELECTED_BORDER = Polygon()
 SELECTED_BORDER.rectangle(0, 0, 90, 90, (10, 10, 10, 10), 5)
 
 state = {
-    "page": 0,
+    "selected_icon": "ebook",
     "running": "launcher"
 }
 
@@ -73,21 +73,10 @@ examples = [x[:-3] for x in os.listdir(APP_DIR) if x.endswith(".py")]
 # Page layout
 centers = [[45, 52], [126, 52], [209, 52], [45, 130], [126, 130], [209, 130]]
 
-MAX_PAGE = math.ceil(len(examples) / 6)
 MAX_PER_ROW = 3
 MAX_PER_PAGE = MAX_PER_ROW * 2
-
-WIDTH = 264
-
-# index for the currently selected file on the page
-selected_file = 0
-
-# Number of icons on the current page
-icons_total = 0
-
-
-def map_value(input, in_min, in_max, out_min, out_max):
-    return (((input - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min
+ICONS_TOTAL = len(examples)
+MAX_PAGE = math.ceil(ICONS_TOTAL / MAX_PER_PAGE)
 
 
 def draw_disk_usage(x):
@@ -119,46 +108,47 @@ def draw_disk_usage(x):
     display.rectangle(x + 12, 7, int(41 / 100.0 * f_used), 6)
 
 
-def render():
-    global icons_total
-    global selected_file
+def read_header(label):
+    file = f"{APP_DIR}/{label}.py"
 
+    name = label
+    icon = ICONS["description"]
+
+    with open(file) as f:
+        header = [f.readline().strip() for _ in range(3)]
+
+    for line in header:
+        if line.startswith("# ICON "):
+            icon = line[7:].strip()
+            icon = ICONS[icon]
+
+        if line.startswith("# NAME "):
+            name = line[7:]
+
+    return name, icon
+
+
+def render(selected_index):
     display.set_pen(BG)
     display.clear()
     display.set_pen(0)
 
-    icons_total = min(6, len(examples[(state["page"] * 6):]))
+    selected_page = selected_index // MAX_PER_PAGE
 
-    for i in range(icons_total):
-        x = centers[i][0]
-        y = centers[i][1]
+    icons = examples[selected_page * 6:selected_page * 6 + MAX_PER_PAGE]
 
-        label = examples[i + (state["page"] * 6)]
-        file = f"{APP_DIR}/{label}.py"
+    for index, label in enumerate(icons):
+        x, y = centers[index]
 
-        name = label
-        icon = ICONS["description"]
-
-        with open(file) as f:
-            header = [f.readline().strip() for _ in range(3)]
-
-        for line in header:
-            if line.startswith("# ICON "):
-                icon = line[7:].strip()
-                icon = ICONS[icon]
-
-            if line.startswith("# NAME "):
-                name = line[7:]
+        name, icon = read_header(label)
 
         vector.set_font_size(20)
         vector.set_transform(t)
         vector.text(icon, x, y)
         t.translate(x, y)
         t.scale(0.8, 0.8)
-        # Snap to the last icon if the position isn't available.
-        selected_file = min(selected_file, icons_total - 1)
 
-        if selected_file == i:
+        if selected_index % MAX_PER_PAGE == index:
             display.set_pen(1)
             t.translate(-45, -36)
             t.scale(1.0, 1.0)
@@ -175,7 +165,7 @@ def render():
         y = int((176 / 2) - (MAX_PAGE * 10 / 2) + (i * 10))
         display.set_pen(0)
         display.rectangle(x, y, 8, 8)
-        if state["page"] != i:
+        if selected_page != i:
             display.set_pen(3)
             display.rectangle(x + 1, y + 1, 6, 6)
 
@@ -196,10 +186,9 @@ def wait_for_user_to_release_buttons():
         time.sleep(0.01)
 
 
-def launch_example(index):
+def launch_example(file):
     wait_for_user_to_release_buttons()
 
-    file = examples[index]
     file = f"{APP_DIR}/{file}"
 
     for k in locals().keys():
@@ -211,67 +200,62 @@ def launch_example(index):
     badger_os.launch(file)
 
 
-def button(pin):
-    global changed
-    global selected_file
-    global icons_total
-    changed = True
-
-    if pin == badger2350.BUTTON_A:
-        if (selected_file % MAX_PER_ROW) > 0:
-            selected_file -= 1
-
-    if pin == badger2350.BUTTON_B:
-        launch_example((state["page"] * MAX_PER_PAGE) + selected_file)
-
-    if pin == badger2350.BUTTON_C:
-        if (selected_file % MAX_PER_ROW) < MAX_PER_ROW - 1:
-            selected_file += 1
-
-    if pin == badger2350.BUTTON_UP:
-        if selected_file >= MAX_PER_ROW:
-            selected_file -= MAX_PER_ROW
-        else:
-            state["page"] = (state["page"] - 1) % MAX_PAGE
-            selected_file += MAX_PER_ROW
-
-    if pin == badger2350.BUTTON_DOWN:
-        if selected_file < MAX_PER_ROW and icons_total > MAX_PER_ROW:
-            selected_file += MAX_PER_ROW
-        elif selected_file >= MAX_PER_ROW or icons_total < MAX_PER_ROW + 1:
-            state["page"] = (state["page"] + 1) % MAX_PAGE
-            selected_file %= MAX_PER_ROW
-
 
 if exited_to_launcher or not woken_by_button:
     wait_for_user_to_release_buttons()
-    display.set_update_speed(badger2350.UPDATE_MEDIUM)
-    render()
+    changed = True
+    first_render = True
 
-display.set_update_speed(badger2350.UPDATE_TURBO)
 
-render()
+try:
+    selected_index = examples.index(state["selected_file"])
+except (ValueError, KeyError):
+    selected_index = 0
+
 
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    # display.keepalive()
+    display.keepalive()
 
     if display.pressed(badger2350.BUTTON_A):
-        button(badger2350.BUTTON_A)
+        if (selected_index % MAX_PER_ROW) > 0:
+            selected_index -= 1
+            changed = True
+
     if display.pressed(badger2350.BUTTON_B):
-        button(badger2350.BUTTON_B)
+        launch_example(state["selected_file"])
+
     if display.pressed(badger2350.BUTTON_C):
-        button(badger2350.BUTTON_C)
+        if (selected_index % MAX_PER_ROW) < MAX_PER_ROW - 1:
+            selected_index += 1
+            changed = True
 
     if display.pressed(badger2350.BUTTON_UP):
-        button(badger2350.BUTTON_UP)
+        if selected_index >= MAX_PER_ROW:
+            selected_index -= MAX_PER_ROW
+            changed = True
+
     if display.pressed(badger2350.BUTTON_DOWN):
-        button(badger2350.BUTTON_DOWN)
+        if selected_index < ICONS_TOTAL - 1:
+            selected_index += MAX_PER_ROW
+            selected_index = min(selected_index, ICONS_TOTAL - 1)
+            changed = True
 
     if changed:
+        state["selected_file"] = examples[selected_index]
         badger_os.state_save("launcher", state)
         changed = False
-        render()
+
+        # If this is the first time we're calling render,
+        # ie: cold boot, or exiting from an app
+        # make sure it gets a good refresh
+        if first_render:
+            first_render = False
+            display.set_update_speed(badger2350.UPDATE_MEDIUM)
+        else:
+            display.set_update_speed(badger2350.UPDATE_TURBO)
+
+        render(selected_index)
 
     display.halt()
