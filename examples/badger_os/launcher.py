@@ -200,7 +200,6 @@ def launch_example(file):
     badger_os.launch(file)
 
 
-
 if exited_to_launcher or not woken_by_button:
     wait_for_user_to_release_buttons()
     changed = True
