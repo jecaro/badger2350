@@ -24,14 +24,16 @@
 #define PICO_RP2350A 1
 
 // --- UART ---
+// UART is (optionally) available on the i2c/QwSt connector
+// since pins 0 and 1 are not broken out.
 #ifndef PICO_DEFAULT_UART
-#define PICO_DEFAULT_UART 0
+#define PICO_DEFAULT_UART 1
 #endif
 #ifndef PICO_DEFAULT_UART_TX_PIN
-#define PICO_DEFAULT_UART_TX_PIN 0
+#define PICO_DEFAULT_UART_TX_PIN 4
 #endif
 #ifndef PICO_DEFAULT_UART_RX_PIN
-#define PICO_DEFAULT_UART_RX_PIN 1
+#define PICO_DEFAULT_UART_RX_PIN 5
 #endif
 
 // --- LED ---
@@ -106,7 +108,7 @@
 // The GPIO Pin used to monitor VSYS. Typically you would use this with ADC.
 // There is an example in adc/read_vsys in pico-examples.
 #ifndef PICO_VSYS_PIN
-#define PICO_VSYS_PIN 29
+// no PICO_VSYS_PIN
 #endif
 
 // pico_cmake_set_default PICO_RP2350_A2_SUPPORTED = 1
