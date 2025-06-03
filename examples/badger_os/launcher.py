@@ -188,6 +188,7 @@ def wait_for_user_to_release_buttons():
 
 def launch_example(file):
     wait_for_user_to_release_buttons()
+    badger2350.reset_pressed_to_wake()
 
     file = f"{APP_DIR}/{file}"
 
