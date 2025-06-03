@@ -1,5 +1,5 @@
 mustelid inc
 H. Badger
-RP2040
-2MB Flash
+RP2350
+4MB Flash
 /badges/badger-mugshot.png
