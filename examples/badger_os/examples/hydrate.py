@@ -52,6 +52,8 @@ badger_os.state_load("hydrate", state)
 
 changed = False
 
+woken_by_button = badger2350.woken_by_button()
+
 
 def render():
 
@@ -126,7 +128,8 @@ def button(pin):
         pass
 
 
-render()
+if not woken_by_button:
+    changed = True
 
 while True:
 
