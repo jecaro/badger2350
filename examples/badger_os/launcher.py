@@ -9,22 +9,6 @@ from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
 
 import badger_os
 
-ICONS = {
-    "badge": "\uea67",
-    "book_2": "\uf53e",
-    "cloud": "\ue2bd",
-    "description": "\ue873",
-    "help": "\ue887",
-    "water_full": "\uf6d6",
-    "wifi": "\ue63e",
-    "image": "\ue3f4",
-    "info": "\ue88e",
-    "format_list_bulleted": "\ue241",
-    "joystick": "\uf5ee"
-}
-
-APP_DIR = "/apps"
-
 changed = False
 first_render = False
 exited_to_launcher = False
@@ -70,11 +54,29 @@ badger_os.state_load("launcher", state)
 
 
 class App:
+    ICONS = {
+        "badge": "\uea67",
+        "book_2": "\uf53e",
+        "cloud": "\ue2bd",
+        "description": "\ue873",
+        "help": "\ue887",
+        "water_full": "\uf6d6",
+        "wifi": "\ue63e",
+        "image": "\ue3f4",
+        "info": "\ue88e",
+        "format_list_bulleted": "\ue241",
+        "joystick": "\uf5ee"
+    }
+    DIRECTORY = "apps"
+    DEFAULT_ICON = "description"
+
     def __init__(self, name):
         self._file = name
-        self._name = name
-        self._icon = "description"
-        self._desc = ""
+        self._meta = {
+            "NAME": name,
+            "ICON": App.DEFAULT_ICON,
+            "DESC": ""
+        }
         self.path = f"{name}/__main__"
         self._loaded = False
 
@@ -82,38 +84,35 @@ class App:
         if self._loaded:
             return
 
-        meta = __import__(f"{APP_DIR}/{self._file}")
-
-        self._name = getattr(meta, "NAME", self._name)
-        self._icon = ICONS[getattr(meta, "ICON", self._icon)]
-        self._desc = getattr(meta, "DESC", self._desc)
+        exec(open(f"{App.DIRECTORY}/{self._file}/__init__.py", "r").read(), self._meta)
+        self._loaded = True
 
     @property
     def name(self):
         self.read_metadata()
-        return self._name
+        return self._meta["NAME"]
 
     @property
     def icon(self):
         self.read_metadata()
-        return self._icon
+        return App.ICONS[self._meta["ICON"]]
 
     @property
     def desc(self):
         self.read_metadata()
-        return self._desc
+        return self._meta["DESC"]
 
     @staticmethod
     def is_valid(file):
         try:
-            os.stat(f"{APP_DIR}/{file}/__init__.py")
+            open(f"{App.DIRECTORY}/{file}/__init__.py", "r")
             return True
         except OSError:
             return False
 
 
 
-apps = [App(x) for x in os.listdir(APP_DIR) if App.is_valid(x)]
+apps = [App(x) for x in os.listdir(App.DIRECTORY) if App.is_valid(x)]
 
 
 # Page layout
@@ -216,7 +215,7 @@ def launch_example(file):
     wait_for_user_to_release_buttons()
     badger2350.reset_pressed_to_wake()
 
-    file = f"{APP_DIR}/{file}"
+    file = f"{App.DIRECTORY}/{file}"
 
     for k in locals().keys():
         if k not in ("gc", "file", "badger_os"):
