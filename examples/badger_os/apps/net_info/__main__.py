@@ -1,7 +1,3 @@
-# ICON wifi
-# NAME Net Info
-# DESC View your local IP Address
-
 import badger2350
 import ezwifi
 from badger2350 import HEIGHT, WIDTH

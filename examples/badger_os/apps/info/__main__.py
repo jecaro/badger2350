@@ -1,7 +1,3 @@
-# ICON info
-# NAME Info
-# DESC Badger 2350 Specification & Info
-
 import badger2350
 import version
 from badger2350 import WIDTH

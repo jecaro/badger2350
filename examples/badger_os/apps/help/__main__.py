@@ -1,7 +1,3 @@
-# ICON help
-# NAME Help
-# DESC How to use your Badger 2350.
-
 import badger2350
 from badger2350 import WIDTH
 from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform

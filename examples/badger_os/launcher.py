@@ -23,7 +23,7 @@ ICONS = {
     "joystick": "\uf5ee"
 }
 
-APP_DIR = "/examples"
+APP_DIR = "/apps"
 
 changed = False
 first_render = False
@@ -68,14 +68,60 @@ state = {
 
 badger_os.state_load("launcher", state)
 
-examples = [x[:-3] for x in os.listdir(APP_DIR) if x.endswith(".py")]
+
+class App:
+    def __init__(self, name):
+        self._file = name
+        self._name = name
+        self._icon = "description"
+        self._desc = ""
+        self.path = f"{name}/__main__"
+        self._loaded = False
+
+    def read_metadata(self):
+        if self._loaded:
+            return
+
+        meta = __import__(f"{APP_DIR}/{self._file}")
+
+        self._name = getattr(meta, "NAME", self._name)
+        self._icon = ICONS[getattr(meta, "ICON", self._icon)]
+        self._desc = getattr(meta, "DESC", self._desc)
+
+    @property
+    def name(self):
+        self.read_metadata()
+        return self._name
+
+    @property
+    def icon(self):
+        self.read_metadata()
+        return self._icon
+
+    @property
+    def desc(self):
+        self.read_metadata()
+        return self._desc
+
+    @staticmethod
+    def is_valid(file):
+        try:
+            os.stat(f"{APP_DIR}/{file}/__init__.py")
+            return True
+        except OSError:
+            return False
+
+
+
+apps = [App(x) for x in os.listdir(APP_DIR) if App.is_valid(x)]
+
 
 # Page layout
 centers = [[45, 52], [126, 52], [209, 52], [45, 130], [126, 130], [209, 130]]
 
 MAX_PER_ROW = 3
 MAX_PER_PAGE = MAX_PER_ROW * 2
-ICONS_TOTAL = len(examples)
+ICONS_TOTAL = len(apps)
 MAX_PAGE = math.ceil(ICONS_TOTAL / MAX_PER_PAGE)
 
 
@@ -108,26 +154,6 @@ def draw_disk_usage(x):
     display.rectangle(x + 12, 7, int(41 / 100.0 * f_used), 6)
 
 
-def read_header(label):
-    file = f"{APP_DIR}/{label}.py"
-
-    name = label
-    icon = ICONS["description"]
-
-    with open(file) as f:
-        header = [f.readline().strip() for _ in range(3)]
-
-    for line in header:
-        if line.startswith("# ICON "):
-            icon = line[7:].strip()
-            icon = ICONS[icon]
-
-        if line.startswith("# NAME "):
-            name = line[7:]
-
-    return name, icon
-
-
 def render(selected_index):
     display.set_pen(BG)
     display.clear()
@@ -135,16 +161,16 @@ def render(selected_index):
 
     selected_page = selected_index // MAX_PER_PAGE
 
-    icons = examples[selected_page * 6:selected_page * 6 + MAX_PER_PAGE]
+    icons = apps[selected_page * 6:selected_page * 6 + MAX_PER_PAGE]
 
-    for index, label in enumerate(icons):
+    for index, app in enumerate(icons):
         x, y = centers[index]
 
-        name, icon = read_header(label)
+        app.read_metadata()
 
         vector.set_font_size(20)
         vector.set_transform(t)
-        vector.text(icon, x, y)
+        vector.text(app.icon, x, y)
         t.translate(x, y)
         t.scale(0.8, 0.8)
 
@@ -157,8 +183,8 @@ def render(selected_index):
 
         display.set_pen(0)
         vector.set_font_size(16)
-        w = vector.measure_text(name)[2]
-        vector.text(name, int(x - (w / 2)), y + 35)
+        w = vector.measure_text(app.name)[2]
+        vector.text(app.name, int(x - (w / 2)), y + 35)
 
     for i in range(MAX_PAGE):
         x = 253
@@ -208,7 +234,7 @@ if exited_to_launcher or not woken_by_button:
 
 
 try:
-    selected_index = examples.index(state["selected_file"])
+    selected_index = apps.index(state["selected_file"])
 except (ValueError, KeyError):
     selected_index = 0
 
@@ -243,7 +269,7 @@ while True:
             changed = True
 
     if changed:
-        state["selected_file"] = examples[selected_index]
+        state["selected_file"] = apps[selected_index].path
         badger_os.state_save("launcher", state)
         changed = False
 
