@@ -15,6 +15,11 @@
 #define CYW43_GPIO                              (1)
 #define CYW43_SPI_PIO                           (1)
 
+#define MICROPY_HW_USB_MSC (1)
+#define MICROPY_HW_USB_DESC_STR_MAX (40)
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Pimoroni"
+#define MICROPY_HW_USB_PRODUCT_FS_STRING MICROPY_HW_BOARD_NAME " MicroPython"
+
 #define MICROPY_HW_PIN_EXT_COUNT    CYW43_WL_GPIO_COUNT
 
 int mp_hal_is_pin_reserved(int n);
