@@ -7,7 +7,8 @@ PIMORONI_PICO_FLAVOUR="pimoroni"
 PIMORONI_PICO_VERSION="driver/ssd1680"
 
 PY_DECL_VERSION="v0.0.3"
-DIR2UF2_VERSION="v0.0.9"
+DIR2UF2_VERSION="feature/custom-fs"
+FFSMAKE_VERSION="main"
 
 
 function log_success {
@@ -52,7 +53,14 @@ function ci_tools_clone {
     mkdir -p "$CI_BUILD_ROOT/tools"
     git clone https://github.com/gadgetoid/py_decl -b "$PY_DECL_VERSION" "$CI_BUILD_ROOT/tools/py_decl"
     git clone https://github.com/gadgetoid/dir2uf2 -b "$DIR2UF2_VERSION" "$CI_BUILD_ROOT/tools/dir2uf2"
+    git clone https://github.com/gadgetoid/ffsmake -b "$FFSMAKE_VERSION" "$CI_BUILD_ROOT/tools/ffsmake" --recursive
     python3 -m pip install littlefs-python==0.12.0
+    cd "$CI_BUILD_ROOT/tools/ffsmake"
+    mkdir build
+    cd build
+    cmake ..
+    make
+    cd "$CI_BUILD_ROOT"
 }
 
 function ci_micropython_build_mpy_cross {
