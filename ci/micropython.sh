@@ -149,7 +149,7 @@ function ci_genversion {
     PIMORONI_PICO_SHA=`cd $CI_BUILD_ROOT/pimoroni-pico && git describe --always --long --abbrev=40 HEAD`
     RELEASE_FILE="$CI_RELEASE_FILENAME"
 
-    cat << EOF > "$CI_BUILD_ROOT/micropython/ports/rp2/modules/version.py"
+    cat << EOF > "$CI_BUILD_ROOT/version.py"
 DATE="`date`"
 BUILD="$RELEASE_FILE"
 MICROPYTHON_SHA="$MICROPYTHON_SHA"
@@ -161,6 +161,7 @@ if [ -z ${CI_USE_ENV+x} ] || [ -z ${CI_PROJECT_ROOT+x} ] || [ -z ${CI_BUILD_ROOT
     SCRIPT_PATH="$(dirname $0)"
     CI_PROJECT_ROOT=$(realpath "$SCRIPT_PATH/..")
     CI_BUILD_ROOT=$(pwd)
+    unset CI_RELEASE_FILENAME
 fi
 
 ci_debug
