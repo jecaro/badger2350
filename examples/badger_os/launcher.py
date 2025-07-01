@@ -69,6 +69,7 @@ class App:
     }
     DIRECTORY = "apps"
     DEFAULT_ICON = "description"
+    ERROR_ICON = "help"  # TODO: have a reserved error icon
 
     def __init__(self, name):
         self._file = name
@@ -84,7 +85,10 @@ class App:
         if self._loaded:
             return
 
-        exec(open(f"{App.DIRECTORY}/{self._file}/__init__.py", "r").read(), self._meta)
+        try:
+            exec(open(f"{App.DIRECTORY}/{self._file}/__init__.py", "r").read(), self._meta)
+        except SyntaxError:
+            self._meta["ICON"] = App.ERROR_ICON
         self._loaded = True
 
     @property
@@ -95,7 +99,10 @@ class App:
     @property
     def icon(self):
         self.read_metadata()
-        return App.ICONS[self._meta["ICON"]]
+        try:
+            return App.ICONS[self._meta["ICON"]]
+        except KeyError:
+            return App.ICONS[App.ERROR_ICON]
 
     @property
     def desc(self):
