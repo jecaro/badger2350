@@ -1,6 +1,7 @@
+from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
+
 import badger2350
 from badger2350 import WIDTH
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 TEXT_SIZE = 0.45
 LINE_HEIGHT = 20

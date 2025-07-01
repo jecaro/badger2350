@@ -3,11 +3,10 @@ import math
 import os
 import time
 
-import badger2350
-from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
-                        Transform)
-
 import badger_os
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
 
 changed = False
 first_render = False

@@ -1,8 +1,10 @@
 
-import badger2350
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
+import gc
 
 import badger_os
+from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
+
+import badger2350
 
 # **** Put the name of your text file here *****
 text_file = "/books/289-0-wind-in-the-willows-abridged.txt"  # File must be on the MicroPython device

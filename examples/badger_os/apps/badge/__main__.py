@@ -1,7 +1,8 @@
-import badger2350
 import jpegdec
 import pngdec
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform, HALIGN_CENTER
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
 
 # Global Constants
 WIDTH = badger2350.WIDTH

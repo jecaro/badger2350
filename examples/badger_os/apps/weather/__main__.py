@@ -1,12 +1,12 @@
 # This example grabs current weather details from Open Meteo and displays them on Badger 2350.
 # Find out more about the Open Meteo API at https://open-meteo.com
 
-import badger2350
 import ezwifi
 import urequests
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
 from badger2350 import HEIGHT, WIDTH
-from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
-                        Transform)
 
 # Set your latitude/longitude here (find yours by right clicking in Google Maps!)
 LAT = 53.38609085276884

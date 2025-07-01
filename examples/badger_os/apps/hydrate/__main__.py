@@ -1,7 +1,8 @@
-import badger2350
-from badger2350 import WIDTH, HEIGHT
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform, HALIGN_CENTER
 import badger_os
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
+from badger2350 import HEIGHT, WIDTH
 
 display = badger2350.Badger2350()
 display.led(0)
