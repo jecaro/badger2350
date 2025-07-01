@@ -56,10 +56,9 @@ function ci_tools_clone {
     git clone https://github.com/gadgetoid/ffsmake -b "$FFSMAKE_VERSION" "$CI_BUILD_ROOT/tools/ffsmake" --recursive
     python3 -m pip install littlefs-python==0.12.0
     cd "$CI_BUILD_ROOT/tools/ffsmake"
-    mkdir build
-    cd build
-    cmake ..
-    make
+    git apply --directory=oofatfs n_fats.patch
+    cmake -S . -B build
+    cmake --build build
     cd "$CI_BUILD_ROOT"
 }
 
