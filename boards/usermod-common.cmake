@@ -49,8 +49,8 @@ include(servo/micropython)
 include(encoder/micropython)
 include(motor/micropython)
 
-# Wakeup module for early GPIO latch
-include(cmodules/wakeup/micropython)
+# Sleep / Wake Reason
+include(modules/c/powman/micropython)
 
 # C++ Magic Memory
 include(cppmem/micropython)

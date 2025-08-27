@@ -1,9 +1,13 @@
-include("$(PORT_DIR)/boards/manifest.py")
+# from include("$(PORT_DIR)/boards/manifest.py")
+freeze("$(PORT_DIR)/modules", "rp2.py")
+include("$(MPY_DIR)/extmod/asyncio")
+require("onewire")
+require("ds18x20")
+require("dht")
+require("neopixel")
 
 # Handy for dealing with APIs
 require("datetime")
 
-# Add $CI_BUILD_DIR/version.py built by ci/micropython.sh:ci_genversion
-freeze("$(PORT_DIR)/../../../", "version.py")
-
-freeze("../modules/")
+freeze("../modules/python/")
+freeze("../modules/common/")

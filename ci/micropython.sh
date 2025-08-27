@@ -1,7 +1,7 @@
 export TERM=${TERM:="xterm-256color"}
 
 MICROPYTHON_FLAVOUR="pimoroni"
-MICROPYTHON_VERSION="experimental/usb-msc-bootsel"
+MICROPYTHON_VERSION="bw-1.26.0"
 
 PIMORONI_PICO_FLAVOUR="pimoroni"
 PIMORONI_PICO_VERSION="driver/ssd1680"
@@ -26,27 +26,21 @@ function log_warning {
 function ci_pimoroni_pico_clone {
     log_inform "Using Pimoroni Pico $PIMORONI_PICO_FLAVOUR/$PIMORONI_PICO_VERSION"
     git clone https://github.com/$PIMORONI_PICO_FLAVOUR/pimoroni-pico "$CI_BUILD_ROOT/pimoroni-pico"
-    cd "$CI_BUILD_ROOT/pimoroni-pico" || return 1
-    git checkout $PIMORONI_PICO_VERSION
-    git submodule update --init
-    cd "$CI_BUILD_ROOT"
+    git -C "$CI_BUILD_ROOT/pimoroni-pico" checkout $PIMORONI_PICO_VERSION
+    git -C "$CI_BUILD_ROOT/pimoroni-pico" submodule update --init
 }
 
 function ci_micropython_clone {
     log_inform "Using MicroPython $MICROPYTHON_FLAVOUR/$MICROPYTHON_VERSION"
     git clone https://github.com/$MICROPYTHON_FLAVOUR/micropython "$CI_BUILD_ROOT/micropython"
-    cd "$CI_BUILD_ROOT/micropython" || return 1
-    git checkout $MICROPYTHON_VERSION
-    git submodule update --init lib/pico-sdk
-    git submodule update --init lib/cyw43-driver
-    git submodule update --init lib/lwip
-    git submodule update --init lib/mbedtls
-    git submodule update --init lib/micropython-lib
-    git submodule update --init lib/tinyusb
-    git submodule update --init lib/btstack
-    cd lib/pico-sdk
-    git apply "$CI_PROJECT_ROOT/ci/pico-sdk-crt0-startup-rosc.patch"
-    cd "$CI_BUILD_ROOT"
+    git -C "$CI_BUILD_ROOT/micropython" checkout $MICROPYTHON_VERSION
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/pico-sdk
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/cyw43-driver
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/lwip
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/mbedtls
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/micropython-lib
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/tinyusb
+    git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/btstack
 }
 
 function ci_tools_clone {
@@ -55,19 +49,18 @@ function ci_tools_clone {
     git clone https://github.com/gadgetoid/dir2uf2 -b "$DIR2UF2_VERSION" "$CI_BUILD_ROOT/tools/dir2uf2"
     git clone https://github.com/gadgetoid/ffsmake -b "$FFSMAKE_VERSION" "$CI_BUILD_ROOT/tools/ffsmake" --recursive
     python3 -m pip install littlefs-python==0.12.0
-    cd "$CI_BUILD_ROOT/tools/ffsmake"
-    git apply --directory=oofatfs n_fats.patch
-    cmake -S . -B build
-    cmake --build build
-    cd "$CI_BUILD_ROOT"
+
+    # Build FFSMake utility
+    FFSMAKE_DIR="$CI_BUILD_ROOT/tools/ffsmake"
+    mkdir -p "$FFSMAKE_DIR/build"
+    cmake -S "$FFSMAKE_DIR" -B "$FFSMAKE_DIR/build"
+    cmake --build "$FFSMAKE_DIR/build"
 }
 
 function ci_micropython_build_mpy_cross {
-    cd "$CI_BUILD_ROOT/micropython/mpy-cross" || return 1
     ccache --zero-stats || true
-    CROSS_COMPILE="ccache " make
+    CROSS_COMPILE="ccache " make -C "$CI_BUILD_ROOT/micropython/mpy-cross"
     ccache --show-stats || true
-    cd "$CI_BUILD_ROOT"
 }
 
 function ci_apt_install_build_deps {
@@ -90,6 +83,25 @@ function micropython_version {
     BOARD=$1
     echo "MICROPY_GIT_TAG=$MICROPYTHON_VERSION, $BOARD $TAG_OR_SHA" >> $GITHUB_ENV
     echo "MICROPY_GIT_HASH=$MICROPYTHON_VERSION-$TAG_OR_SHA" >> $GITHUB_ENV
+}
+
+function ci_genversion {
+    BOARD=$1
+    MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/boards/$BOARD
+    if [ -z ${CI_RELEASE_FILENAME+x} ]; then
+        CI_RELEASE_FILENAME=$BOARD
+    fi
+
+    MICROPYTHON_SHA=`git -C "$CI_BUILD_ROOT/micropython" describe --always --long --abbrev=40 HEAD`
+    PIMORONI_PICO_SHA=`git -C "$CI_BUILD_ROOT/pimoroni-pico" describe --always --long --abbrev=40 HEAD`
+    RELEASE_FILE="$CI_RELEASE_FILENAME"
+
+    cat << EOF > "$MICROPY_BOARD_DIR/version.py"
+DATE="`date`"
+BUILD="$RELEASE_FILE"
+MICROPYTHON_SHA="$MICROPYTHON_SHA"
+PIMORONI_PICO_SHA="$PIMORONI_PICO_SHA"
+EOF
 }
 
 function ci_cmake_configure {
@@ -123,16 +135,16 @@ function ci_cmake_build {
         return 1
     fi
 
-    if [ -z ${CI_RELEASE_FILENAME+x} ]; then
-        CI_RELEASE_FILENAME=$BOARD
-    fi
-
-    ci_genversion
+    ci_genversion $BOARD
 
     BUILD_DIR="$CI_BUILD_ROOT/build-$BOARD"
     ccache --zero-stats || true
     cmake --build $BUILD_DIR -j 2
     ccache --show-stats || true
+
+    if [ -z ${CI_RELEASE_FILENAME+x} ]; then
+        CI_RELEASE_FILENAME=$BOARD
+    fi
 
     log_inform "Copying .uf2 to $(pwd)/$CI_RELEASE_FILENAME.uf2"
     cp "$BUILD_DIR/firmware.uf2" $CI_RELEASE_FILENAME.uf2
@@ -143,24 +155,10 @@ function ci_cmake_build {
     fi
 }
 
-function ci_genversion {
-    MICROPYTHON_SHA=`cd $CI_BUILD_ROOT/micropython && git describe --always --long --abbrev=40 HEAD`
-    PIMORONI_PICO_SHA=`cd $CI_BUILD_ROOT/pimoroni-pico && git describe --always --long --abbrev=40 HEAD`
-    RELEASE_FILE="$CI_RELEASE_FILENAME"
-
-    cat << EOF > "$CI_BUILD_ROOT/version.py"
-DATE="`date`"
-BUILD="$RELEASE_FILE"
-MICROPYTHON_SHA="$MICROPYTHON_SHA"
-PIMORONI_PICO_SHA="$PIMORONI_PICO_SHA"
-EOF
-}
-
 if [ -z ${CI_USE_ENV+x} ] || [ -z ${CI_PROJECT_ROOT+x} ] || [ -z ${CI_BUILD_ROOT+x} ]; then
     SCRIPT_PATH="$(dirname $0)"
     CI_PROJECT_ROOT=$(realpath "$SCRIPT_PATH/..")
     CI_BUILD_ROOT=$(pwd)
-    unset CI_RELEASE_FILENAME
 fi
 
 ci_debug
