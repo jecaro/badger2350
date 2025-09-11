@@ -122,6 +122,12 @@ void powman_init() {
             case 28: // Floating
                 gpio_disable_pulls(i);
                 break;
+            case BW_SWITCH_A:
+            case BW_SWITCH_B:
+            case BW_SWITCH_C:
+            case BW_SWITCH_UP:
+            case BW_SWITCH_DOWN: // Don't mess with the button pulls, must be pulled up
+                break;
             default: // Pull down
                 gpio_set_pulls(i, false, true);
         }
