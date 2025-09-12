@@ -22,7 +22,7 @@ except:  # noqa: E722
 
 if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
     from picographics import PicoGraphics, DISPLAY_BADGER_2350
-    self.display = PicoGraphics(DISPLAY_BADGER_2350)
+    display = PicoGraphics(DISPLAY_BADGER_2350)
     display.set_pen(0)
     display.clear()
     display.set_pen(0x22)
