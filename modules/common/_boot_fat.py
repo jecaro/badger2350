@@ -9,27 +9,25 @@ import powman
 bdev = rp2.Flash()
 try:
     fat = vfs.VfsFat(bdev)
-    fat.label("Blinky2350")
+    fat.label("Badger2350")
     vfs.mount(fat, "/")
     os.listdir("/") # might fail with UnicodeError on corrupt FAT
 
 except:  # noqa: E722
     vfs.VfsFat.mkfs(bdev)
     fat = vfs.VfsFat(bdev)
-    fat.label("Blinky2350")
+    fat.label("Badger2350")
     vfs.mount(fat, "/")
 
 
 if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
-    import blinky
-    from picographics import PicoGraphics
-    blinky = blinky.Blinky()
-    display = PicoGraphics(width=blinky.WIDTH, height=blinky.HEIGHT)
+    from picographics import PicoGraphics, DISPLAY_BADGER_2350
+    self.display = PicoGraphics(DISPLAY_BADGER_2350)
     display.set_pen(0)
     display.clear()
     display.set_pen(0x22)
-    display.text("USB\nDisk\nMode", 1, 0, scale=1)
-    blinky.update(display)
+    display.text("USB\nDisk\nMode", 1, 0, scale=4)
+    display.update()
     rp2.enable_msc()
 
 del os, vfs, bdev
