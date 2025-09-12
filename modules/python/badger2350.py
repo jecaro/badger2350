@@ -1,3 +1,4 @@
+import time
 import machine
 import powman
 from picographics import PicoGraphics, DISPLAY_BADGER_2350
