@@ -118,11 +118,13 @@ def launch(file):
     button_c = machine.Pin(badger2350.BUTTON_C, machine.Pin.IN, machine.Pin.PULL_DOWN)
 
     def quit_to_launcher(_pin):
-        if button_a.value() and button_c.value():
+        if button_a.value() == 0 and button_c.value() == 0:
+            state_clear_running()
+            os.sync()
             machine.reset()
 
-    button_a.irq(trigger=machine.Pin.IRQ_RISING, handler=quit_to_launcher)
-    button_c.irq(trigger=machine.Pin.IRQ_RISING, handler=quit_to_launcher)
+    button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher)
+    button_c.irq(trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher)
 
     try:
         __import__(file)
@@ -147,8 +149,7 @@ def warning(display, message, width=badger2350.WIDTH - 20, height=badger2350.HEI
     print(message)
 
     if display is None:
-        display = badger2350.badger2350()
-        display.led(128)
+        display = badger2350.Badger2350()
 
     # Draw a light grey background
     display.set_pen(12)
