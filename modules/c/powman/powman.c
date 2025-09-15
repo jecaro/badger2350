@@ -289,6 +289,11 @@ static inline void setup_gpio(bool buttons_only) {
         return;
     }
 
+    // Init the home button
+    gpio_init(BW_SWITCH_HOME);
+    gpio_set_dir(BW_SWITCH_HOME, GPIO_IN);
+    gpio_set_pulls(BW_SWITCH_HOME, true, false);
+
     // Init the button interrupt
     gpio_init(BW_SWITCH_INT);
     gpio_set_dir(BW_SWITCH_INT, GPIO_IN);
