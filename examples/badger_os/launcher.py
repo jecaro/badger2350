@@ -25,7 +25,7 @@ else:
 
 display = badger2350.Badger2350()
 display.set_font("bitmap8")
-display.led(0)
+# display.led(0)
 
 BG = display.create_pen(195, 195, 195)
 
@@ -45,7 +45,7 @@ SELECTED_BORDER = Polygon()
 SELECTED_BORDER.rectangle(0, 0, 90, 90, (10, 10, 10, 10), 5)
 
 state = {
-    "selected_icon": "ebook",
+    "selected_file": "ebook/__main__",
     "running": "launcher"
 }
 
@@ -134,6 +134,7 @@ def draw_disk_usage(x):
     _, f_used, _ = badger_os.get_disk_usage()
 
     display.set_pen(15)
+    """
     display.image(
         bytearray(
             (
@@ -152,6 +153,7 @@ def draw_disk_usage(x):
         x,
         6,
     )
+    """
     display.rectangle(x + 10, 5, 45, 10)
     display.set_pen(0)
     display.rectangle(x + 11, 6, 43, 8)
@@ -232,23 +234,29 @@ def launch_example(file):
     badger_os.launch(file)
 
 
+def app_index(file):
+    index = 0
+    for app in apps:
+        if app.path == file:
+            break
+        index += 1
+    return index
+
+
+selected_index = app_index(state["selected_file"])
+
+
 if exited_to_launcher or not woken_by_button:
     wait_for_user_to_release_buttons()
     changed = True
     first_render = True
 
 
-try:
-    selected_index = apps.index(state["selected_file"])
-except (ValueError, KeyError):
-    selected_index = 0
-
-
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    display.keepalive()
-
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep
+ 
     if display.pressed(badger2350.BUTTON_A):
         if (selected_index % MAX_PER_ROW) > 0:
             selected_index -= 1
@@ -289,4 +297,4 @@ while True:
 
         render(selected_index)
 
-    display.halt()
+    display.sleep()

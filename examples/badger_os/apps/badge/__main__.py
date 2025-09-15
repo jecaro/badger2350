@@ -83,7 +83,7 @@ def draw_badge():
 
 # Create a new Badger and set it to update NORMAL
 display = badger2350.Badger2350()
-display.led(0)
+# display.led(0)
 display.set_update_speed(badger2350.UPDATE_NORMAL)
 
 BG = display.create_pen(195, 195, 195)
@@ -128,7 +128,7 @@ draw_badge()
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
 
     # If on battery, halt the Badger to save power, it will wake up if any of the front buttons are pressed
     display.halt()

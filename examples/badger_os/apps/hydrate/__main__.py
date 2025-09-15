@@ -5,7 +5,7 @@ import badger2350
 from badger2350 import HEIGHT, WIDTH
 
 display = badger2350.Badger2350()
-display.led(0)
+# display.led(0)
 display.set_thickness(2)
 
 # Pico Vector
@@ -54,7 +54,7 @@ woken_by_button = badger2350.woken_by_button()
 
 def render():
 
-    display.led(128)
+    # display.led(128)
 
     # Clear to white
     display.set_pen(15)
@@ -98,7 +98,7 @@ def render():
 
     # Update the screen!
     display.update()
-    display.led(0)
+    # display.led(0)
 
 
 def button(pin):
@@ -130,7 +130,7 @@ if not woken_by_button:
 
 while True:
 
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
 
     if display.pressed(badger2350.BUTTON_A):
         button(badger2350.BUTTON_A)

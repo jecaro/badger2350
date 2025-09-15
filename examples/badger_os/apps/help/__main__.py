@@ -7,8 +7,8 @@ TEXT_SIZE = 0.45
 LINE_HEIGHT = 20
 
 display = badger2350.Badger2350()
-display.led(128)
-display.set_thickness(2)
+# display.led(128)
+# display.set_thickness(2)
 
 # Pico Vector
 vector = PicoVector(display.display)
@@ -58,5 +58,5 @@ display.update()
 # Call halt in a loop, on battery this switches off power.
 # On USB, the app will exit when A+C is pressed because the launcher picks that up.
 while True:
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
     display.halt()

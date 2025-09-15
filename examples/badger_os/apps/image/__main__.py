@@ -13,7 +13,7 @@ TOTAL_IMAGES = 0
 
 # Turn the act LED on as soon as possible
 display = badger2350.Badger2350()
-display.led(128)
+# display.led(128)
 display.set_update_speed(badger2350.UPDATE_NORMAL)
 
 jpeg = jpegdec.JPEG(display.display)
@@ -84,7 +84,7 @@ changed = True
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
 
     if display.pressed(badger2350.BUTTON_UP):
         if state["current_image"] > 0:
