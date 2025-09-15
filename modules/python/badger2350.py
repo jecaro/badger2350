@@ -1,3 +1,4 @@
+import os
 import time
 import machine
 import powman
@@ -32,9 +33,10 @@ BUTTONS = (
     BUTTON_A,
     BUTTON_B,
     BUTTON_C,
-    BUTTON_UP,
-    BUTTON_HOME
+    BUTTON_UP
 )
+
+_wake_buttons = powman.get_wake_buttons()
 
 
 def is_wireless():
@@ -53,7 +55,12 @@ def woken_by_button():
 def pressed_to_wake(button):
     # TODO: BUTTON_HOME cannot be a wake button
     # so maybe raise an exception
-    return button in powman.get_wake_buttons()
+    return button in _wake_buttons
+
+
+def reset_pressed_to_wake():
+    global _wake_buttons
+    _wake_buttons = []
 
 
 def woken_by_reset():
@@ -71,6 +78,7 @@ class Badger2350():
     def __init__(self):
         self.display = PicoGraphics(DISPLAY_BADGER_2350)
         self._update_speed = 0
+        self._wake_buttons = powman.get_wake_buttons()
 
     def __getattr__(self, item):
         # Glue to redirect calls to PicoGraphics
@@ -92,7 +100,7 @@ class Badger2350():
 
 
     def pressed(self, button):
-        return button.value() == 0
+        return button.value() == 0 or pressed_to_wake(button)
 
     def pressed_any(self):
         return 0 in [button.value() for button in BUTTONS]
