@@ -1,4 +1,3 @@
-import os
 import time
 import machine
 import powman

@@ -27,7 +27,7 @@ bdev_lfs = rp2.Flash(start=USER_FLASH_SIZE - LFS_SIZE, len=LFS_SIZE)
 try:
     lfs = os.VfsLfs2(bdev_lfs, progsize=256)
     vfs.mount(lfs, "/state")
-except:
+except:  # noqa: E722
     os.VfsLfs2.mkfs(bdev_lfs, progsize=256)
     lfs = os.VfsLfs2(bdev_lfs, progsize=256)
     vfs.mount(lfs, "/state")

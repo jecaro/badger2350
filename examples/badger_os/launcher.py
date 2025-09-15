@@ -256,7 +256,7 @@ while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
     # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep
- 
+
     if display.pressed(badger2350.BUTTON_A):
         if (selected_index % MAX_PER_ROW) > 0:
             selected_index -= 1
