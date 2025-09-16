@@ -17,6 +17,42 @@
 #ifndef _BOARDS_PICO2_W_H
 #define _BOARDS_PICO2_W_H
 
+// Board config
+// RTC = PCF85063e
+#define BW_RTC_I2C       i2c0
+#define BW_RTC_ADDR      (0x51)
+#define BW_RTC_I2C_SDA   (4)
+#define BW_RTC_I2C_SCL   (5)
+
+// Rear white LEDs
+#define BW_LED_0         (0)
+#define BW_LED_1         (1)
+#define BW_LED_2         (3)
+#define BW_LED_3         (4)
+
+// User inputs
+#define BW_SWITCH_A      (7)
+#define BW_SWITCH_B      (8)
+#define BW_SWITCH_C      (9)
+#define BW_SWITCH_UP     (10)
+#define BW_SWITCH_DOWN   (6)
+
+// This is wired to the RESET (Disk / Sleep / Reset / Power On)
+// button and used to determine long press status
+#define BW_RESET_SW      (14) // No pull, active high?
+
+#define BW_CHARGE_STAT   (12)
+
+// I2C power for talking to RTC
+#define BW_SW_POWER_EN   (27)
+
+// Interrupt channels for GPIO wakeup
+#define BW_VBUS_DETECT   (11) // No pull, active high?
+#define BW_RTC_ALARM     (13) // Pull up, active low
+#define BW_SWITCH_HOME   (22) // AKA boot
+#define BW_SWITCH_INT    (15) // Pull up, active low
+#define BW_SWITCH_MASK   ((1 << BW_SWITCH_A) | (1 << BW_SWITCH_B) | (1 << BW_SWITCH_C) | (1 << BW_SWITCH_UP) | (1 << BW_SWITCH_DOWN))
+
 // For board detection
 #define RASPBERRYPI_PICO2_W
 
@@ -24,17 +60,9 @@
 #define PICO_RP2350A 1
 
 // --- UART ---
-// UART is (optionally) available on the i2c/QwSt connector
-// since pins 0 and 1 are not broken out.
-#ifndef PICO_DEFAULT_UART
-#define PICO_DEFAULT_UART 1
-#endif
-#ifndef PICO_DEFAULT_UART_TX_PIN
-#define PICO_DEFAULT_UART_TX_PIN 4
-#endif
-#ifndef PICO_DEFAULT_UART_RX_PIN
-#define PICO_DEFAULT_UART_RX_PIN 5
-#endif
+// no PICO_DEFAULT_UART
+// no PICO_DEFAULT_UART_TX_PIN
+// no PICO_DEFAULT_UART_RX_PIN
 
 // --- LED ---
 // no PICO_DEFAULT_LED_PIN - LED is on Wireless chip
@@ -45,10 +73,10 @@
 #define PICO_DEFAULT_I2C 0
 #endif
 #ifndef PICO_DEFAULT_I2C_SDA_PIN
-#define PICO_DEFAULT_I2C_SDA_PIN 4
+#define PICO_DEFAULT_I2C_SDA_PIN BW_RTC_I2C_SDA
 #endif
 #ifndef PICO_DEFAULT_I2C_SCL_PIN
-#define PICO_DEFAULT_I2C_SCL_PIN 5
+#define PICO_DEFAULT_I2C_SCL_PIN BW_RTC_I2C_SCL
 #endif
 
 // --- SPI ---
@@ -76,40 +104,21 @@
 #define PICO_FLASH_SPI_CLKDIV 2
 #endif
 
-// pico_cmake_set_default PICO_FLASH_SIZE_BYTES = (4 * 1024 * 1024)
+// pico_cmake_set_default PICO_FLASH_SIZE_BYTES = (16 * 1024 * 1024)
 #ifndef PICO_FLASH_SIZE_BYTES
-#define PICO_FLASH_SIZE_BYTES (4 * 1024 * 1024)
+#define PICO_FLASH_SIZE_BYTES (16 * 1024 * 1024)
 #endif
+
 // Drive high to force power supply into PWM mode (lower ripple on 3V3 at light loads)
-// note the SMSP mode pin is on WL_GPIO1
+// no PICO_SMPS_MODE_PIN
 
-#ifndef CYW43_WL_GPIO_COUNT
-#define CYW43_WL_GPIO_COUNT 3
-#endif
-
-#ifndef CYW43_WL_GPIO_LED_PIN
-#define CYW43_WL_GPIO_LED_PIN 0
-#endif
-
-// If CYW43_WL_GPIO_VBUS_PIN is defined then a CYW43 GPIO has to be used to read VBUS.
-// This can be passed to cyw43_arch_gpio_get to determine if the device is battery powered.
-// PICO_VBUS_PIN and CYW43_WL_GPIO_VBUS_PIN should not both be defined.
-#ifndef CYW43_WL_GPIO_VBUS_PIN
-#define CYW43_WL_GPIO_VBUS_PIN 2
-#endif
-
-// If CYW43_USES_VSYS_PIN is defined then CYW43 uses the VSYS GPIO (defined by PICO_VSYS_PIN) for other purposes.
-// If this is the case, to use the VSYS GPIO it's necessary to ensure CYW43 is not using it.
-// This can be achieved by wrapping the use of the VSYS GPIO in cyw43_thread_enter / cyw43_thread_exit.
-#ifndef CYW43_USES_VSYS_PIN
-#define CYW43_USES_VSYS_PIN 1
-#endif
+// The GPIO Pin used to read VBUS to determine if the device is battery powered.
+// no PICO_VBUS_PIN
 
 // The GPIO Pin used to monitor VSYS. Typically you would use this with ADC.
 // There is an example in adc/read_vsys in pico-examples.
-#ifndef PICO_VSYS_PIN
 // no PICO_VSYS_PIN
-#endif
+
 
 // pico_cmake_set_default PICO_RP2350_A2_SUPPORTED = 1
 #ifndef PICO_RP2350_A2_SUPPORTED

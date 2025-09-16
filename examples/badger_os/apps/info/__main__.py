@@ -1,11 +1,8 @@
-# ICON info
-# NAME Info
-# DESC Badger 2350 Specification & Info
+import version
+from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 import badger2350
-import version
 from badger2350 import WIDTH
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 TEXT_SIZE = 1
 LINE_HEIGHT = 15
@@ -13,7 +10,7 @@ LINE_HEIGHT = 15
 version = version.BUILD
 
 display = badger2350.Badger2350()
-display.led(128)
+# display.led(128)
 
 # Pico Vector
 vector = PicoVector(display.display)
@@ -65,5 +62,5 @@ display.update()
 # On USB, the app will exit when A+C is pressed because the launcher picks that up.
 
 while True:
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
     display.halt()

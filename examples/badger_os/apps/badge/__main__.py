@@ -1,11 +1,8 @@
-# ICON badge
-# NAME Badge
-# DESC Hello! My name is...
-
-import badger2350
 import jpegdec
 import pngdec
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform, HALIGN_CENTER
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
 
 # Global Constants
 WIDTH = badger2350.WIDTH
@@ -86,7 +83,7 @@ def draw_badge():
 
 # Create a new Badger and set it to update NORMAL
 display = badger2350.Badger2350()
-display.led(0)
+# display.led(0)
 display.set_update_speed(badger2350.UPDATE_NORMAL)
 
 BG = display.create_pen(195, 195, 195)
@@ -131,7 +128,7 @@ draw_badge()
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
 
     # If on battery, halt the Badger to save power, it will wake up if any of the front buttons are pressed
     display.halt()

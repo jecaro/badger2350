@@ -1,15 +1,12 @@
-# ICON wifi
-# NAME Net Info
-# DESC View your local IP Address
+import ezwifi
+from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 import badger2350
-import ezwifi
 from badger2350 import HEIGHT, WIDTH
-from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
 # Display Setup
 display = badger2350.Badger2350()
-display.led(0)
+# display.led(0)
 
 # Pico Vector
 vector = PicoVector(display.display)
@@ -42,7 +39,7 @@ def draw_header():
 
 def connect_handler(wifi):
     # Make sure the LED is on to signal the WiFi has connected
-    display.led(128)
+    # display.led(128)
 
     # Draw the title header
     draw_header()
@@ -65,7 +62,7 @@ def connect_handler(wifi):
 
 def failed_handler(_wifi):
     # Make sure the LED is OFF to signal the WiFi has not connected
-    display.led(0)
+    # display.led(0)
 
     # Draw the title header
     draw_header()
@@ -96,5 +93,5 @@ except ValueError:
 # Call halt in a loop, on battery this switches off power.
 # On USB, the app will exit when A+C is pressed because the launcher picks that up.
 while True:
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
     display.halt()

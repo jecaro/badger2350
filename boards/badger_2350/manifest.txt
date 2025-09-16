@@ -1,6 +1,4 @@
+basic/*.py
+basic/*.af
 *.py
 *.af
-badges/*.*
-books/*.txt
-examples/*.py
-images/*.*

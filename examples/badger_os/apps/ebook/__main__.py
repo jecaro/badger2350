@@ -1,12 +1,10 @@
-# ICON book_2
-# NAME eBook
-# DESC Text file viewer
+
 import gc
 
-import badger2350
+import badger_os
 from picovector import ANTIALIAS_BEST, PicoVector, Polygon, Transform
 
-import badger_os
+import badger2350
 
 # **** Put the name of your text file here *****
 text_file = "/books/289-0-wind-in-the-willows-abridged.txt"  # File must be on the MicroPython device
@@ -95,7 +93,7 @@ text_spacing = int(34 * state["text_size"])
 
 # Create a new Badger and set it to update FAST
 display = badger2350.Badger2350()
-display.led(128)
+# display.led(128)
 display.set_update_speed(badger2350.UPDATE_FAST)
 
 # Pico Vector
@@ -214,7 +212,7 @@ else:
 while True:
     # Sometimes a button press or hold will keep the system
     # powered *through* HALT, so latch the power back on.
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
 
     # Was the next page button pressed?
     if display.pressed(badger2350.BUTTON_DOWN):

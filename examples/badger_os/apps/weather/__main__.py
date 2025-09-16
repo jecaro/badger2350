@@ -1,16 +1,12 @@
-# ICON cloud
-# NAME Weather
-# DESC View current weather information
-
 # This example grabs current weather details from Open Meteo and displays them on Badger 2350.
 # Find out more about the Open Meteo API at https://open-meteo.com
 
-import badger2350
 import ezwifi
 import urequests
+from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Transform
+
+import badger2350
 from badger2350 import HEIGHT, WIDTH
-from picovector import (ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon,
-                        Transform)
 
 # Set your latitude/longitude here (find yours by right clicking in Google Maps!)
 LAT = 53.38609085276884
@@ -32,7 +28,7 @@ ICONS = {
 
 # Display Setup
 display = badger2350.Badger2350()
-display.led(128)
+# display.led(128)
 display.set_update_speed(2)
 
 # Pico Vector
@@ -141,5 +137,5 @@ draw_page()
 # Call halt in a loop, on battery this switches off power.
 # On USB, the app will exit when A+C is pressed because the launcher picks that up.
 while True:
-    display.keepalive()
+    # display.keepalive()  # TODO: No longer a problem because "halt" puts the board into powman sleep()
     display.halt()

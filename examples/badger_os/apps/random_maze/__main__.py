@@ -1,7 +1,3 @@
-# ICON joystick
-# NAME Maze
-# DESC Escape the randomly generated mazes!
-
 """
 A single player game demo. Navigate a set of mazes from the start (red) to the goal (green).
 Mazes get bigger / harder with each increase in level.
@@ -19,9 +15,10 @@ import random
 import time
 from collections import namedtuple
 
-import badger2350
 from machine import Pin
 from picographics import DISPLAY_BADGER_2350, PicoGraphics
+
+import badger2350
 
 # Button Setup
 btn_a = Pin(12, Pin.IN)
