@@ -21,17 +21,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Essential
 include(pimoroni_i2c/micropython)
-include(pimoroni_bus/micropython)
 
-# Pico Graphics Essential
-include(hershey_fonts/micropython)
-include(bitmap_fonts/micropython)
-include(picographics/micropython)
+include(modules/c/ssd1680/micropython)
+include(modules/c/picovector/micropython)
 
-# Pico Graphics Extra
-include(pngdec/micropython)
-include(jpegdec/micropython)
-include(picovector/micropython)
 include(qrcode/micropython/micropython)
 
 # Sensors & Breakouts

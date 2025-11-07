@@ -240,9 +240,9 @@ def app_index(file):
     index = 0
     for app in apps:
         if app.path == file:
-            break
+            return index
         index += 1
-    return index
+    return 0
 
 
 selected_index = app_index(state["selected_file"])

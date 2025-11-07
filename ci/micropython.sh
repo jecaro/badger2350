@@ -1,5 +1,7 @@
 export TERM=${TERM:="xterm-256color"}
 
+# cache buster 2025-10-16
+
 MICROPYTHON_FLAVOUR="pimoroni"
 MICROPYTHON_VERSION="bw-1.26.0"
 
@@ -10,6 +12,7 @@ PY_DECL_VERSION="v0.0.3"
 DIR2UF2_VERSION="feature/custom-fs"
 FFSMAKE_VERSION="main"
 
+BOARD="badger"
 
 function log_success {
 	echo -e "$(tput setaf 2)$1$(tput sgr0)"
@@ -86,13 +89,11 @@ function ci_debug {
 }
 
 function micropython_version {
-    BOARD=$1
     echo "MICROPY_GIT_TAG=$MICROPYTHON_VERSION, $BOARD $TAG_OR_SHA" >> $GITHUB_ENV
     echo "MICROPY_GIT_HASH=$MICROPYTHON_VERSION-$TAG_OR_SHA" >> $GITHUB_ENV
 }
 
 function ci_genversion {
-    BOARD="badger"
     MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/board
     if [ -z ${CI_RELEASE_FILENAME+x} ]; then
         CI_RELEASE_FILENAME=$BOARD
@@ -111,13 +112,8 @@ EOF
 }
 
 function ci_cmake_configure {
-    BOARD="badger"
     TOOLS_DIR="$CI_BUILD_ROOT/tools"
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
-    if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
-        log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_configure <board_name>."
-        return 1
-    fi
     BUILD_DIR="$CI_BUILD_ROOT/build-$BOARD"
     cmake -S $CI_BUILD_ROOT/micropython/ports/rp2 -B "$BUILD_DIR" \
     -DPICOTOOL_FORCE_FETCH_FROM_GIT=1 \
@@ -134,12 +130,7 @@ function ci_cmake_configure {
 }
 
 function ci_cmake_build {
-    BOARD="badger"
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
-    if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
-        log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_build <board_name>."
-        return 1
-    fi
 
     ci_genversion $BOARD
 
