@@ -47,6 +47,10 @@ uint32_t powman_get_user_switches(void) {
     return user_button_state;
 }
 
+static inline void clear_double_tap_flag(void) {
+    powman_clear_bits(&powman_hw->chip_reset, POWMAN_CHIP_RESET_DOUBLE_TAP_BITS);
+}
+
 void i2c_enable(void) {
     gpio_init(BW_SW_POWER_EN);
     gpio_set_dir(BW_SW_POWER_EN, GPIO_OUT);
@@ -294,10 +298,6 @@ static inline bool double_tap_flag_is_set(void) {
 
 static inline void set_double_tap_flag(void) {
     powman_set_bits(&powman_hw->chip_reset, POWMAN_CHIP_RESET_DOUBLE_TAP_BITS);
-}
-
-static inline void clear_double_tap_flag(void) {
-    powman_clear_bits(&powman_hw->chip_reset, POWMAN_CHIP_RESET_DOUBLE_TAP_BITS);
 }
 
 static inline void setup_gpio(bool buttons_only) {
