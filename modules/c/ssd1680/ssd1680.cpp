@@ -5,6 +5,13 @@
 #include <string.h>
 
 extern uint32_t framebuffer[];
+
+#ifdef MICROPY_BUILD_TYPE
+extern "C" {
+extern void mp_handle_pending(bool);
+}
+#endif
+
 namespace pimoroni {
   constexpr int WIDTH = 264;
   constexpr int HEIGHT = 176;
