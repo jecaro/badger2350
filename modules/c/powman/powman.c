@@ -121,6 +121,8 @@ void pcf85063_wakeup_init(uint8_t period) {
 void powman_init() {
     uint64_t abs_time_ms = 1746057600000; // 2025/05/01 - Milliseconds since epoch
 
+    clear_double_tap_flag();
+
     // Run everything from pll_usb pll and stop pll_sys
     set_sys_clock_48mhz();
 
@@ -365,13 +367,10 @@ static inline void setup_system(void) {
     pcf85063_disable_interrupt();
 }
 
-/*
-// TODO is this still relevant and useful?
 static int64_t alarm_clear_double_tap(alarm_id_t id, __unused void *user_data) {
     clear_double_tap_flag();
     return 0;
 }
-*/
 
 void shipping_mode() {
     powman_init();
@@ -461,12 +460,7 @@ static void __attribute__((constructor)) powman_startup(void) {
         // Arm, wait, then disarm and continue booting
         set_double_tap_flag();
 
-        int err;
-        //(void)powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP0_CH, BW_VBUS_DETECT, true, true, 1000);
-        err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP1_CH, BW_RTC_ALARM, true, false, 1000);
-        //err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP2_CH, BW_RESET_SW, true, true, 1000);
-        err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP3_CH, BW_SWITCH_INT, true, false, 1000);
-        (void)err;
+        add_alarm_in_ms(POWMAN_DOUBLE_RESET_TIMEOUT_MS, alarm_clear_double_tap, NULL, false);
 
         // If reset is held (low), it could be a long press
         if(gpio_get(BW_RESET_SW) == 0) {
