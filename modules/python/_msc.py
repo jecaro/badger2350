@@ -1,17 +1,15 @@
-from badgeware import screen, brushes, shapes, PixelFont, io, run, Matrix
-from st7789 import ST7789
+from badgeware import screen, brushes, PixelFont
+from ssd1680 import SSD1680
 import rp2
-import random
 
 
-display = ST7789()
+display = SSD1680()
 
 rp2.enable_msc()
 
-background = brushes.color(35, 41, 37)
-phosphor = brushes.color(211, 250, 55, 150)
-white = brushes.color(235, 245, 255)
-faded = brushes.color(235, 245, 255, 200)
+background = brushes.color(235, 245, 255)
+white = brushes.color(35, 41, 37)
+faded = brushes.color(35, 41, 37, 200)
 
 try:
     small_font = PixelFont.load("/system/assets/fonts/ark.ppf")
@@ -22,61 +20,28 @@ except OSError:
 
 class DiskMode():
   def __init__(self):
-    self.stars = []
     self.transferring = False
-    for _ in range(500):
-      self.stars.append((random.randint(-80, 80), random.randint(-60, 60), 0))
-
-  def update(self):
-    speed = 500 if self.transferring else 1000
-    for i in range(len(self.stars)):
-      star = self.stars[i]
-      dx = star[0] * (io.ticks_delta / speed)
-      dy = star[1] * (io.ticks_delta / speed)
-      age = star[2] + 1
-      star = (star[0] + dx, star[1] + dy, age)
-
-      if star[0] < -80 or star[1] < -60 or star[0] > 80 or star[1] > 60:
-        self.stars[i] = (random.randint(-80, 80), random.randint(-60, 60), 0)
-      else:
-        self.stars[i] = star
 
   def draw(self):
     screen.brush = background
-    screen.draw(shapes.rectangle(0, 0, 160, 120))
-
-    self.update()
-
-    rect = shapes.rectangle(0, 0, 1, 1)
-    for i in range(len(self.stars)):
-      star = self.stars[i]
-      age = min(1, star[2] / 50)
-
-      brightness = 100
-      if self.transferring:
-        brightness = 255
-
-      if int(star[0]) != 0 and int(star[1]) != 0:
-        screen.brush = brushes.color(255, 255, 255, age * brightness)
-        rect.transform = Matrix().translate(star[0], star[1]).translate(80, 60)
-        screen.draw(rect)
+    screen.clear()
 
     if large_font:
         screen.font = large_font
         screen.brush = white
         center_text("USB Disk Mode", 5)
 
-        screen.text("1:", 10, 23)
+        screen.text("1:", 10, 25)
         screen.text("2:", 10, 45)
-        screen.text("3:", 10, 67)
+        screen.text("3:", 10, 65)
 
-        screen.brush = phosphor
+        screen.brush = white
         screen.font = small_font
-        wrap_text("""Your badge is now\nmounted as a disk""", 30, 24)
+        wrap_text("""Your badge is now mounted as a disk""", 30, 28)
 
-        wrap_text("""Copy code onto\nit to experiment!""", 30, 46)
+        wrap_text("""Copy code onto it to experiment!""", 30, 48)
 
-        wrap_text("""Eject the disk to\nreboot your badge""", 30, 68)
+        wrap_text("""Eject the disk to reboot your badge""", 30, 68)
 
         screen.font = small_font
         if self.transferring:
@@ -108,4 +73,8 @@ def update():
   disk_mode.draw()
 
 
-run(update)
+update()
+display.update()
+
+while True:
+   pass
