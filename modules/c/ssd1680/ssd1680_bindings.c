@@ -5,12 +5,14 @@
 static MP_DEFINE_CONST_FUN_OBJ_1(ssd1680___del___obj, ssd1680___del__);
 static MP_DEFINE_CONST_FUN_OBJ_1(ssd1680_update_obj, ssd1680_update);
 static MP_DEFINE_CONST_FUN_OBJ_3(ssd1680_command_obj, ssd1680_command);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssd1680_update_speed_obj, ssd1680_update_speed);
 
 /* Class Methods */
 static const mp_rom_map_elem_t ssd1680_locals[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ssd1680___del___obj) },
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&ssd1680_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_command), MP_ROM_PTR(&ssd1680_command_obj) },
+    { MP_ROM_QSTR(MP_QSTR_speed), MP_ROM_PTR(&ssd1680_update_speed_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_ssd1680_locals, ssd1680_locals);
 
@@ -29,6 +31,10 @@ static const mp_map_elem_t ssd1680_globals[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1680), (mp_obj_t)&SSD1680_type },
     { MP_ROM_QSTR(MP_QSTR_WIDTH), MP_ROM_INT(264) },
     { MP_ROM_QSTR(MP_QSTR_HEIGHT), MP_ROM_INT(176) },
+    { MP_ROM_QSTR(MP_QSTR_TURBO), MP_ROM_INT(3)},
+    { MP_ROM_QSTR(MP_QSTR_FAST), MP_ROM_INT(2)},
+    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_SLOW), MP_ROM_INT(0)},
 };
 static MP_DEFINE_CONST_DICT(mp_module_ssd1680_globals, ssd1680_globals);
 
