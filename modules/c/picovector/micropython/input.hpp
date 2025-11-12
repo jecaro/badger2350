@@ -119,6 +119,7 @@ extern "C" {
       if(user_sw & (1 << BW_SWITCH_C))    buttons |= BUTTON_C;
       if(user_sw & (1 << BW_SWITCH_UP))   buttons |= BUTTON_UP;
       if(user_sw & (1 << BW_SWITCH_DOWN)) buttons |= BUTTON_DOWN;
+      got_wakeup_switches = true;
     }
 
     buttons |= gpio_get(BW_SWITCH_A)    ? 0 : BUTTON_A;
