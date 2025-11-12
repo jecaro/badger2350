@@ -22,5 +22,5 @@ def copy_files():
                         main.write(buf[:length])
 
 
-if powman.get_wake_reason() == powman.WAKE_WATCHDOG:
+if powman.get_wake_reason() in (powman.WAKE_WATCHDOG, powman.WAKE_RESET):
     copy_files()
