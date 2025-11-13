@@ -2,18 +2,16 @@
 
 import sys
 import os
-from badgeware import run, io
+from badgeware import run, State
 import machine
-import gc
-import powman
-
-SKIP_CINEMATIC = powman.get_wake_reason() == powman.WAKE_WATCHDOG
-
-running_app = None
 
 
 def quit_to_launcher(pin):
-    global running_app
+    global running_app, state
+
+    state["running"] = "/system/apps/menu"
+    State.modify("menu", state)
+
     getattr(running_app, "on_exit", lambda: None)()
     # If we reset while boot is low, bad times
     while not pin.value():
@@ -21,40 +19,20 @@ def quit_to_launcher(pin):
     machine.reset()
 
 
-if not SKIP_CINEMATIC:
-    startup = __import__("/system/apps/startup")
+state = {
+    "active": 0,
+    "running": "/system/apps/menu"
+}
+State.load("menu", state)
 
-    run(startup.update)
-
-    if sys.path[0].startswith("/system/apps"):
-        sys.path.pop(0)
-
-    del startup
-
-    gc.collect()
-
-menu = __import__("/system/apps/menu")
-
-app = run(menu.update)
-
-if sys.path[0].startswith("/system/apps"):
-    sys.path.pop(0)
-
-del menu
-
-# make sure these can be re-imported by the app
-del sys.modules["ui"]
-del sys.modules["icon"]
-
-gc.collect()
-
-# Don't pass the b press into the app
-while io.held:
-    io.poll()
+running_app = state["running"]
 
 machine.Pin.board.BUTTON_HOME.irq(
     trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
 )
+
+
+app = running_app
 
 sys.path.insert(0, app)
 os.chdir(app)
@@ -67,4 +45,3 @@ run(running_app.update)
 
 # Unreachable, in theory!
 machine.reset()
-

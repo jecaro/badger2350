@@ -23,6 +23,8 @@ rtc = pcf85063a.PCF85063A(machine.I2C())
 display = ssd1680.SSD1680()
 screen.font = DEFAULT_FONT
 
+SLEEP_TIMEOUT_MS = 5000
+
 
 class Colors:
     GREEN_1 = brushes.color(86, 211, 100)
@@ -498,13 +500,21 @@ def run(update, init=None, on_exit=None):
         if init:
             init()
         try:
+            io.poll()
             while True:
-                io.poll()
-                #update_backlight()
                 if (result := update()) is not None:
                     return result
                 gc.collect()
                 display.update()
+                t_start = time.ticks_ms()
+                while True:
+                    io.poll()
+                    if io.pressed:
+                        break
+                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS:
+                        if on_exit:
+                            on_exit()
+                        powman.sleep()  # ???
         except KeyboardInterrupt:
             pass
         finally:
