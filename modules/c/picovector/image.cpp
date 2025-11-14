@@ -46,7 +46,6 @@ namespace picovector {
     _has_palette = has_palette;
     _buffer = buffer;
     _managed_buffer = false;
-    debug_printf("has p %d\n", this->_has_palette);
     _bytes_per_pixel = this->_has_palette ? sizeof(uint8_t) : sizeof(uint32_t);
     _row_stride = w * _bytes_per_pixel;
     if(_has_palette) {
@@ -86,6 +85,12 @@ namespace picovector {
 
   bool image_t::has_palette() {
     return this->_has_palette;
+  }
+
+  void image_t::delete_palette() {
+    if(this->has_palette()) {
+      this->_palette.clear();
+    }
   }
 
   void image_t::palette(uint8_t i, uint32_t c) {
@@ -175,6 +180,49 @@ namespace picovector {
       }else{
         uint32_t *src = (uint32_t *)this->ptr(sxo, syo + i);
         span_blit_argb8(src, dst, tr.w, this->alpha());
+      }
+    }
+  }
+
+  /*
+    renders a vertical span onto the target image using this image as a
+    texture.
+
+    - p: the starting point of the span on the target
+    - c: the count of pixels to render
+    - uvs: the start coordinate of the texture
+    - uve: the end coordinate of the texture
+  */
+  void image_t::vspan_tex(image_t *target, point_t p, uint c, point_t uvs, point_t uve) {
+    rect_t b = target->bounds();
+    if(p.x < b.x || p.x > b.x + b.w) {
+      return;
+    }
+
+    float ustep = (uve.x - uvs.x) / float(c);
+    float vstep = (uve.y - uvs.y) / float(c);
+    float u = uvs.x;
+    float v = uvs.y;
+
+    for(int y = p.y; y < p.y + c; y++) {
+      u += ustep;
+      v += vstep;
+
+      if(y >= b.y && y < b.y + b.h) {
+        uint32_t *dst = (uint32_t *)target->ptr(p.x, y);
+
+        int tx = round(u);
+        int ty = round(v);
+
+        uint32_t col;
+        if(this->_has_palette) {
+          uint8_t *src = (uint8_t *)this->ptr(tx, ty);
+          col = this->_palette[*src];
+        } else {
+          uint32_t *src = (uint32_t *)this->ptr(tx, ty);
+          col = *src;
+        }
+        *dst = col;
       }
     }
   }
