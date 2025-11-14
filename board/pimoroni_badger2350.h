@@ -30,27 +30,29 @@
 // Rear white LEDs
 #define BW_LED_0         (0)
 #define BW_LED_1         (1)
-#define BW_LED_2         (3)
-#define BW_LED_3         (4)
+#define BW_LED_2         (2)
+#define BW_LED_3         (3)
+
+#define BW_PSRAM_CS      (8)
 
 // User inputs
 #define BW_SWITCH_A      (7)
-#define BW_SWITCH_B      (8)
-#define BW_SWITCH_C      (9)
-#define BW_SWITCH_UP     (10)
+#define BW_SWITCH_B      (9)
+#define BW_SWITCH_C      (10)
+#define BW_SWITCH_UP     (11)
 #define BW_SWITCH_DOWN   (6)
 
 // This is wired to the RESET (Disk / Sleep / Reset / Power On)
 // button and used to determine long press status
 #define BW_RESET_SW      (14) // No pull, active high?
 
-#define BW_CHARGE_STAT   (12)
+//#define BW_CHARGE_STAT   (12)
 
 // I2C power for talking to RTC
 #define BW_SW_POWER_EN   (27)
 
 // Interrupt channels for GPIO wakeup
-#define BW_VBUS_DETECT   (11) // No pull, active high?
+#define BW_VBUS_DETECT   (12) // No pull, active high?
 #define BW_RTC_ALARM     (13) // Pull up, active low
 #define BW_SWITCH_HOME   (22) // AKA boot
 #define BW_SWITCH_INT    (15) // Pull up, active low
@@ -110,6 +112,10 @@
 // pico_cmake_set_default PICO_FLASH_SIZE_BYTES = (16 * 1024 * 1024)
 #ifndef PICO_FLASH_SIZE_BYTES
 #define PICO_FLASH_SIZE_BYTES (16 * 1024 * 1024)
+#endif
+
+#ifndef CYW43_WL_GPIO_COUNT
+#define CYW43_WL_GPIO_COUNT 3
 #endif
 
 // Drive high to force power supply into PWM mode (lower ripple on 3V3 at light loads)
