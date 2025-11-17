@@ -3,6 +3,13 @@ import cppmem
 # Switch C++ memory allocations to use MicroPython's heap
 cppmem.set_mode(cppmem.MICROPYTHON)
 
+try:
+    with open("hardware_test.txt", "r"):
+        import hardware_test   # noqa F401
+except OSError:
+    pass
+
+
 def copy_files():
     # Copy default files from readonly /system to editable /
     default_files = ["main.py", "secrets.py"]
