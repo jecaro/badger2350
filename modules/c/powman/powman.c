@@ -148,6 +148,9 @@ void powman_init() {
         gpio_set_function(i, GPIO_FUNC_SIO);
         gpio_set_input_enabled(i, false);
         switch (i) {
+            case 8:
+                gpio_set_pulls(i, true, false);
+                break;
             case BW_RESET_SW:
             case BW_SWITCH_HOME:
             case 26:
