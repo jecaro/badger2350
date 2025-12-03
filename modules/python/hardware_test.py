@@ -140,7 +140,7 @@ class Tests:
     def test_psram(self):
         ram_free = round(gc.mem_free() / 1000000, 1)
 
-        if ram_free < 8.2:
+        if ram_free < 8.2 or not powman._test_psram_cs():
             raise Exception("E18")
 
     # Toggle the case lights on the back of the badge
