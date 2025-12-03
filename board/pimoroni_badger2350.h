@@ -9,8 +9,6 @@
 //       SHOULD ONLY CONSIST OF PREPROCESSOR DIRECTIVES
 // -----------------------------------------------------
 
-// This header may be included by other board headers as "boards/pico2_w.h"
-
 // pico_cmake_set PICO_PLATFORM=rp2350
 // pico_cmake_set PICO_CYW43_SUPPORTED = 1
 
@@ -46,8 +44,6 @@
 // button and used to determine long press status
 #define BW_RESET_SW      (14) // No pull, active high?
 
-//#define BW_CHARGE_STAT   (12)
-
 // I2C power for talking to RTC
 #define BW_SW_POWER_EN   (27)
 
@@ -57,9 +53,6 @@
 #define BW_SWITCH_HOME   (22) // AKA boot
 #define BW_SWITCH_INT    (15) // Pull up, active low
 #define BW_SWITCH_MASK   ((1 << BW_SWITCH_A) | (1 << BW_SWITCH_B) | (1 << BW_SWITCH_C) | (1 << BW_SWITCH_UP) | (1 << BW_SWITCH_DOWN))
-
-// For board detection
-#define RASPBERRYPI_PICO2_W
 
 // --- RP2350 VARIANT ---
 #define PICO_RP2350A 1
@@ -85,21 +78,11 @@
 #endif
 
 // --- SPI ---
-#ifndef PICO_DEFAULT_SPI
-#define PICO_DEFAULT_SPI 0
-#endif
-#ifndef PICO_DEFAULT_SPI_SCK_PIN
-#define PICO_DEFAULT_SPI_SCK_PIN 18
-#endif
-#ifndef PICO_DEFAULT_SPI_TX_PIN
-#define PICO_DEFAULT_SPI_TX_PIN 19
-#endif
-#ifndef PICO_DEFAULT_SPI_RX_PIN
-#define PICO_DEFAULT_SPI_RX_PIN 16
-#endif
-#ifndef PICO_DEFAULT_SPI_CSN_PIN
-#define PICO_DEFAULT_SPI_CSN_PIN 17
-#endif
+// no PICO_DEFAULT_SPI
+// no PICO_DEFAULT_SPI_SCK_PIN
+// no PICO_DEFAULT_SPI_TX_PIN
+// no PICO_DEFAULT_SPI_RX_PIN
+// no PICO_DEFAULT_SPI_CSN_PIN
 
 // --- FLASH ---
 
@@ -114,9 +97,7 @@
 #define PICO_FLASH_SIZE_BYTES (16 * 1024 * 1024)
 #endif
 
-#ifndef CYW43_WL_GPIO_COUNT
-#define CYW43_WL_GPIO_COUNT 3
-#endif
+// --- Power ---
 
 // Drive high to force power supply into PWM mode (lower ripple on 3V3 at light loads)
 // no PICO_SMPS_MODE_PIN
@@ -128,6 +109,11 @@
 // There is an example in adc/read_vsys in pico-examples.
 // no PICO_VSYS_PIN
 
+// --- CYW43 ---
+
+#ifndef CYW43_WL_GPIO_COUNT
+#define CYW43_WL_GPIO_COUNT 3
+#endif
 
 // pico_cmake_set_default PICO_RP2350_A2_SUPPORTED = 1
 #ifndef PICO_RP2350_A2_SUPPORTED

@@ -20,6 +20,10 @@
 int mp_hal_is_pin_reserved(int n);
 #define MICROPY_HW_PIN_RESERVED(i) mp_hal_is_pin_reserved(i)
 
+// Skip default pins
+#define MICROPY_HW_SPI_NO_DEFAULT_PINS          (1)
+#define MICROPY_HW_UART_NO_DEFAULT_PINS         (1)
+
 // Enable PSRAM
 #define MICROPY_HW_ENABLE_PSRAM                 (1)
 
