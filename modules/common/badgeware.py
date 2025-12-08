@@ -15,13 +15,19 @@ from math import floor
 
 ASSETS = "/system/assets"
 WIDTH, HEIGHT = screen.width, screen.height
-DEFAULT_FONT = PixelFont.load(f"{ASSETS}/fonts/sins.ppf")
-ERROR_FONT = PixelFont.load(f"{ASSETS}/fonts/desert.ppf")
+
+try:
+    DEFAULT_FONT = PixelFont.load(f"{ASSETS}/fonts/sins.ppf")
+    ERROR_FONT = PixelFont.load(f"{ASSETS}/fonts/desert.ppf")
+    screen.font = DEFAULT_FONT
+except OSError:
+    DEFAULT_FONT = None
+    ERROR_FONT = None
 
 # RTC
 rtc = pcf85063a.PCF85063A(machine.I2C())
 display = ssd1680.SSD1680()
-screen.font = DEFAULT_FONT
+
 
 SLEEP_TIMEOUT_MS = 5000
 
@@ -31,15 +37,12 @@ class Colors:
     GREEN_2 = brushes.color(46, 160, 67)
     GREEN_3 = brushes.color(25, 108, 46)
     GREEN_4 = brushes.color(3, 58, 22)
-    GRAY_1 = brushes.color(242, 245, 243)
-    GRAY_2 = brushes.color(228, 235, 230)
-    GRAY_3 = brushes.color(182, 191, 184)
-    GRAY_4 = brushes.color(144, 150, 146)
-    GRAY_5 = brushes.color(35, 41, 37)
-    GRAY_6 = brushes.color(16, 20, 17)
+
+    DARK_GRAY = brushes.color(0, 0, 64)
+    LIGHT_GRAY = brushes.color(0, 0, 128)
 
     BLACK = brushes.color(0, 0, 0)
-    WHITE = brushes.color(255, 255, 255)
+    WHITE = brushes.color(0, 0, 255)
 
     RED = brushes.color(255, 0, 0)
     YELLOW = brushes.color(255, 255, 0)
