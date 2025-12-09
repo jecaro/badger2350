@@ -546,13 +546,13 @@ def message(title, text, window=None):
         0, 0, error_window.width, error_window.height, 5, 5, 5, 5
     )
     heading = shapes.rounded_rectangle(0, 0, error_window.width, 12, 5, 5, 0, 0)
-    error_window.brush = brushes.color(100, 100, 100, 200)
+    error_window.brush = Colors.WHITE
     error_window.draw(background)
 
-    error_window.brush = brushes.color(255, 100, 100, 200)
+    error_window.brush = Colors.BLACK
     error_window.draw(heading)
 
-    error_window.brush = brushes.color(50, 100, 50)
+    error_window.brush = Colors.WHITE
     tw = 35
     error_window.draw(
         shapes.rounded_rectangle(
@@ -560,7 +560,7 @@ def message(title, text, window=None):
         )
     )
 
-    error_window.brush = brushes.color(255, 200, 200)
+    error_window.brush = Colors.LIGHT_GRAY
     error_window.text(
         "Okay", error_window.width - tw + 5 - 10, error_window.height - 12
     )
@@ -568,7 +568,7 @@ def message(title, text, window=None):
     error_window.text(title, 5, y)
     y += 17
 
-    error_window.brush = brushes.color(200, 200, 200)
+    error_window.brush = Colors.BLACK
     text_lines = wrap_and_measure(error_window, text, 12, error_window.width - 10)
     for line, _width in text_lines:
         error_window.text(line, 5, y)
