@@ -552,7 +552,7 @@ def message(title, text, window=None):
     error_window.brush = Colors.BLACK
     error_window.draw(heading)
 
-    error_window.brush = Colors.WHITE
+    error_window.brush = Colors.DARK_GRAY
     tw = 35
     error_window.draw(
         shapes.rounded_rectangle(
