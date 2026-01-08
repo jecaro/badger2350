@@ -1,6 +1,5 @@
-#pragma once
-
-#include "image.hpp"
+#include "mp_helpers.hpp"
+#include "picovector.hpp"
 
 extern "C" {
 
@@ -12,10 +11,6 @@ extern "C" {
   #ifndef NO_QSTR
     #include "PNGdec.h"
   #endif
-  
-  typedef struct _png_handle_t {
-    mp_obj_t fhandle;
-  } png_handle_t;
 
   void *pngdec_open_callback(const char *filename, int32_t *size) {
     mp_obj_t fn = mp_obj_new_str(filename, (mp_uint_t)strlen(filename));
@@ -67,11 +62,8 @@ extern "C" {
     return seek_s.offset;
   }
 
-
-
   void pngdec_decode_callback(PNGDRAW *pDraw) {
     image_t *target = (image_t *)pDraw->pUser;
-
 
     uint8_t *psrc = (uint8_t *)pDraw->pPixels;
     int w = pDraw->iWidth;
@@ -80,7 +72,7 @@ extern "C" {
       case PNG_PIXEL_TRUECOLOR: {
         uint32_t *pdst = (uint32_t *)target->ptr(0, pDraw->y);
         while(w--) {
-          *pdst = _make_col(psrc[0], psrc[1], psrc[2], 255);
+          *pdst = rgba(psrc[0], psrc[1], psrc[2], 255);
           psrc += 3;
           pdst++;
         }
@@ -89,7 +81,7 @@ extern "C" {
       case PNG_PIXEL_TRUECOLOR_ALPHA: {
         uint32_t *pdst = (uint32_t *)target->ptr(0, pDraw->y);
         while(w--) {
-          *pdst = _make_col(psrc[0], psrc[1], psrc[2], psrc[3]);
+          *pdst = rgba(psrc[0], psrc[1], psrc[2], psrc[3]);
           psrc += 4;
           pdst++;
         }
@@ -98,7 +90,7 @@ extern "C" {
       case PNG_PIXEL_INDEXED: {
         if(target->has_palette()) {
           for(int i = 0; i < 256; i++) {
-            uint32_t c = _make_col(
+            uint32_t c = rgba(
               pDraw->pPalette[i * 3 + 0],
               pDraw->pPalette[i * 3 + 1],
               pDraw->pPalette[i * 3 + 2],
@@ -116,7 +108,7 @@ extern "C" {
         } else {
           uint32_t *pdst = (uint32_t *)target->ptr(0, pDraw->y);
           while(w--) {
-            *pdst = _make_col(
+            *pdst = rgba(
               pDraw->pPalette[*psrc * 3 + 0],
               pDraw->pPalette[*psrc * 3 + 1],
               pDraw->pPalette[*psrc * 3 + 2],
@@ -126,24 +118,6 @@ extern "C" {
             pdst++;
           }
         }
-
-        // pDraw->pPalette
-        // uint32_t *pdst = (uint32_t *)target->ptr(0, pDraw->y);
-        // while(c--) {
-        //   uint8_t pi = *psrc;
-        //   // do something with index here
-
-        //   *pdst = _make_col(
-        //     pDraw->pPalette[(pi * 3) + 0],
-        //     pDraw->pPalette[(pi * 3) + 1],
-        //     pDraw->pPalette[(pi * 3) + 2],
-        //     pDraw->iHasAlpha ? pDraw->pPalette[768 + pi] : 255
-        //   );
-
-        //   psrc++;
-        //   pdst++;
-        // }
-
       } break;
 
       case PNG_PIXEL_GRAYSCALE: {
@@ -154,23 +128,23 @@ extern "C" {
 
           switch(pDraw->iBpp) {
             case 8: {
-              *pdst = _make_col(src, src, src);
+              *pdst = rgba(src, src, src);
               pdst++;
             } break;
 
             case 4: {
               int src1 = (src & 0xf0) | ((src & 0xf0) >> 4);
               int src2 = (src & 0x0f) | ((src & 0x0f) << 4);
-              *pdst = _make_col(src1, src1, src1);
+              *pdst = rgba(src1, src1, src1);
               pdst++;
-              *pdst = _make_col(src2, src2, src2);
+              *pdst = rgba(src2, src2, src2);
               pdst++;
             } break;
 
             case 1: {
               for(int i = 0; i < 8; i++) {
                 int v = src & 0b10000000 ? 255 : 0;
-                *pdst = _make_col(v, v, v);
+                *pdst = rgba(v, v, v);
                 pdst++;
                 src <<= 1;
               }
