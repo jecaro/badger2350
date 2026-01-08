@@ -4,52 +4,59 @@ import os
 import io as stream
 import sys
 import time
+import random
 import pcf85063a
 
 import machine
 import powman
 import ssd1680
-from picovector import brushes, shapes, screen, PixelFont, io, Image, Matrix  # noqa F401
-from math import floor
+import builtins
 
-
-ASSETS = "/system/assets"
-WIDTH, HEIGHT = screen.width, screen.height
-
-try:
-    DEFAULT_FONT = PixelFont.load(f"{ASSETS}/fonts/sins.ppf")
-    ERROR_FONT = PixelFont.load(f"{ASSETS}/fonts/desert.ppf")
-    screen.font = DEFAULT_FONT
-except OSError:
-    DEFAULT_FONT = None
-    ERROR_FONT = None
-
-# RTC
-rtc = pcf85063a.PCF85063A(machine.I2C())
-display = ssd1680.SSD1680()
-
+import picovector
 
 SLEEP_TIMEOUT_MS = 5000
 
+_CASE_LIGHTS = [machine.PWM(machine.Pin.board.CL0), machine.PWM(machine.Pin.board.CL1),
+                machine.PWM(machine.Pin.board.CL2), machine.PWM(machine.Pin.board.CL3)]
 
-class Colors:
-    GREEN_1 = brushes.color(86, 211, 100)
-    GREEN_2 = brushes.color(46, 160, 67)
-    GREEN_3 = brushes.color(25, 108, 46)
-    GREEN_4 = brushes.color(3, 58, 22)
+for led in _CASE_LIGHTS:
+    led.freq(500)
 
-    DARK_GRAY = brushes.color(0, 0, 64)
-    LIGHT_GRAY = brushes.color(0, 0, 128)
 
-    BLACK = brushes.color(0, 0, 0)
-    WHITE = brushes.color(0, 0, 255)
+def set_case_led(led, value):
+    if not isinstance(led, int):
+        raise TypeError("LED must be a number between 0 and 3")
 
-    RED = brushes.color(255, 0, 0)
-    YELLOW = brushes.color(255, 255, 0)
-    GREEN = brushes.color(0, 255, 0)
-    TEAL = brushes.color(0, 255, 255)
-    BLUE = brushes.color(0, 0, 255)
-    PURPLE = brushes.color(255, 0, 255)
+    if led < 0 or led > len(_CASE_LIGHTS) - 1:
+        raise ValueError("LED out of range!")
+
+    if not isinstance(value, (int, float)):
+        raise TypeError("brightness must be a number between 0.0 and 1.0")
+
+    if value < 0 or value > 1.0:
+        raise ValueError("brightness must be between 0.0 and 1.0")
+
+    value = int(value * 65535)
+    _CASE_LIGHTS[led].duty_u16(value)
+
+
+def get_case_led(led=None):
+
+    if led is None:
+        raise ValueError("LED must be provided!")
+
+    if not isinstance(led, int):
+        raise TypeError("LED must be a number between 0 and 3")
+
+    if led < 0 or led > len(_CASE_LIGHTS) - 1:
+        raise ValueError("LED out of range!")
+
+    return _CASE_LIGHTS[led].duty_u16() / 65535
+
+
+def get_light():
+    # TODO: Not supported
+    return 0
 
 
 def localtime_to_rtc():
@@ -68,40 +75,6 @@ def time_from_ntp():
     del sys.modules["ntptime"]
     gc.collect()
     localtime_to_rtc()
-
-
-if time.localtime()[0] >= 2025:
-    localtime_to_rtc()
-
-elif rtc.datetime()[0] >= 2025:
-    rtc_to_localtime()
-
-
-# We can rely on these having been set up by powman... maybe
-BUTTON_DOWN = machine.Pin.board.BUTTON_DOWN
-BUTTON_A = machine.Pin.board.BUTTON_A
-BUTTON_B = machine.Pin.board.BUTTON_B
-BUTTON_C = machine.Pin.board.BUTTON_C
-BUTTON_UP = machine.Pin.board.BUTTON_UP
-BUTTON_HOME = machine.Pin.board.BUTTON_HOME
-
-VBAT_SENSE = machine.ADC(machine.Pin.board.VBAT_SENSE)
-VBUS_DETECT = machine.Pin.board.VBUS_DETECT
-CHARGE_STAT = machine.Pin.board.CHARGE_STAT
-SENSE_1V1 = machine.ADC(machine.Pin.board.SENSE_1V1)
-
-SYSTEM_VERY_SLOW = 0
-SYSTEM_SLOW = 1
-SYSTEM_NORMAL = 2
-SYSTEM_FAST = 3
-SYSTEM_TURBO = 4
-
-BAT_MAX = 4.10
-BAT_MIN = 3.00
-
-BUTTONS = {BUTTON_DOWN, BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP}
-
-conversion_factor = 3.3 / 65536
 
 
 # takes a text string (that may include newline characters) and performs word
@@ -153,6 +126,19 @@ def clamp(v, vmin, vmax):
     return max(vmin, min(v, vmax))
 
 
+def rnd(v1, v2=None):
+    if v2:
+      return random.randint(v1, v2)
+    else:
+      return random.randint(0, v1)
+
+def frnd(v1, v2=None):
+    if v2:
+      return random.uniform(v1, v2)
+    else:
+      return random.uniform(0, v1)
+
+
 def file_exists(path):
     try:
         os.stat(path)
@@ -171,7 +157,7 @@ def is_dir(path):
 
 class SpriteSheet:
     def __init__(self, file, columns, rows):
-        self.image = Image.load(file)
+        self.image = image.load(file)
         self.sw = int(self.image.width / columns)
         self.sh = int(self.image.height / rows)
 
@@ -214,110 +200,48 @@ class AnimatedSprite:
         return len(self.frames)
 
 
-class BitmapFont:
-    def __init__(self, file, char_width, char_height):
-        self.image = Image.load(file)
-        self.cw = char_width
-        self.ch = char_height
+class State:
+    @staticmethod
+    def delete(app):
+        try:
+            os.remove("/state/{}.json".format(app))
+        except OSError:
+            pass
 
-        columns = self.image.width / self.cw
-        rows = self.image.height / self.ch
+    @staticmethod
+    def save(app, data):
+        try:
+            with open("/state/{}.json".format(app), "w") as f:
+                f.write(json.dumps(data))
+                f.flush()
+        except OSError:
+            import os
 
-        self.chars = []
-        for y in range(rows):
-            for x in range(columns):
-                self.chars.append(
-                    self.image.window(self.cw * x, self.ch * y, self.cw, self.ch)
-                )
+            try:
+                os.stat("/state")
+            except OSError:
+                os.mkdir("/state")
+                State.save(app, data)
 
-    def text(self, image, x, y, text, max_width=None, only_measure=False):
-        cx, cy = 0, 0  # caret pos
-        maxx, maxy = 0, 0
+    @staticmethod
+    def modify(app, data):
+        state = {}
+        State.load(app, state)
+        state.update(data)
+        State.save(app, state)
 
-        lines = text.splitlines()
-        for line in lines:
-            words = line.split(" ")
-            for word in words:
-                # work out length of word in pixels
-                wl = len(word) * self.cw
+    @staticmethod
+    def load(app, defaults):
+        try:
+            data = json.loads(open("/state/{}.json".format(app), "r").read())
+            if type(data) is dict:
+                defaults.update(data)
+                return True
+        except (OSError, ValueError):
+            pass
 
-                # move to next line if exceeds max width
-                if max_width and cx + wl > max_width:
-                    cx = 0
-                    cy += self.ch - 2
-
-                # render characters in word
-                for char in word:
-                    char_idx = ord(char)
-                    if not only_measure and char_idx < len(self.chars):
-                        image.blit(self.chars[char_idx], cx + x, cy + y)
-                    cx += self.cw
-
-                    if max_width and cx > max_width:
-                        cx = 0
-                        cy += self.ch - 2
-
-                # once the word has been rendered update our min and max cursor values
-                maxx = max(maxx, cx)
-                maxy = max(maxy, cy + self.ch - 2)
-
-                cx += self.cw / 3
-
-            cx = 0
-            cy += self.ch - 2
-
-        return maxx, maxy
-
-    def measure(self, text, max_width=None):
-        return self.text(None, 0, 0, text, max_width=max_width, only_measure=True)
-
-
-class Particle:
-    def __init__(self, position, motion, user=None):
-        self.position = position
-        self.motion = motion
-        self.user = user
-        self.created_at = time.ticks_ms()
-
-    def age(self):
-        return (time.ticks_ms() - self.created_at) / 1000
-
-
-class ParticleGenerator:
-    def __init__(self, gravity, max_age=2):
-        self.gravity = gravity
-        self.max_age = max_age
-        self.last_tick_ms = time.ticks_ms()
-        self.particles = []
-
-    def spawn(self, position, motion, user=None):
-        self.particles.append(Particle(position, motion, user))
-
-    def youngest(self):
-        return self.particles[-1] if len(self.particles) > 0 else None
-
-    # update all particle locations and age out particles that have expired
-    def tick(self):
-        # expire aged particles
-        self.particles = [
-            particle for particle in self.particles if particle.age() < self.max_age
-        ]
-
-        # update particles
-        dt = (time.ticks_ms() - self.last_tick_ms) / 1000
-        for particle in self.particles:
-            particle.position = (
-                particle.position[0] + (particle.motion[0] * dt),
-                particle.position[1] + (particle.motion[1] * dt),
-            )
-
-            # apply "gravity" force to motion vectors
-            particle.motion = (
-                (particle.motion[0] + self.gravity[0] * dt),
-                (particle.motion[1] + self.gravity[1] * dt),
-            )
-
-        self.last_tick_ms = time.ticks_ms()
+        State.save(app, defaults)
+        return False
 
 
 # show the current free memory including the delta since last time the
@@ -361,7 +285,6 @@ def woken_by_reset():
 
 
 def sleep():
-    #display.set_backlight(0)
     powman.sleep()
 
 
@@ -370,7 +293,7 @@ class Assets:
     def font(name):
         file = f"{ASSETS}/fonts/{name}.ppf"
         try:
-            return PixelFont.load(file)
+            return pixel_font.load(file)
         except OSError as e:
             raise ValueError(f'Font "{name}" not found. (Missing {file}?)') from e
 
@@ -483,32 +406,30 @@ class State:
         return False
 
 
-
-MAX_BACKLIGHT_SAMPLES = 30
-backlight_smoothing = [0.0 for _ in range(MAX_BACKLIGHT_SAMPLES)]
-backlight_smoothing_idx = 0
-
-
-def update_backlight():
-    global backlight_smoothing_idx
-    light = get_light() / 6553
-    backlight_smoothing[backlight_smoothing_idx] = min(1.0, max(0.5, light))
-    backlight_smoothing_idx += 1
-    backlight_smoothing_idx %= MAX_BACKLIGHT_SAMPLES
-    #display.backlight(sum(backlight_smoothing) / MAX_BACKLIGHT_SAMPLES)
+def mode(mode, force=False):
+    # TODO: Possible hires mode with optional matrix transform or similar?
+    #       ie: hires working image gets blitted onto a lores screen.
+    pass
 
 
-def run(update, init=None, on_exit=None):
+def run(update, init=None, on_exit=None, auto_clear=True):
+    screen.font = DEFAULT_FONT
+    screen.clear(BG)
+    screen.pen = FG
     try:
         if init:
             init()
         try:
-            io.poll()
             while True:
+                if auto_clear:
+                    screen.clear(BG)
+                    screen.pen = FG
+                io.poll()
                 if (result := update()) is not None:
                     return result
                 gc.collect()
                 display.update()
+                # Wait for input or sleep
                 t_start = time.ticks_ms()
                 while True:
                     io.poll()
@@ -542,33 +463,33 @@ def message(title, text, window=None):
     error_window.font = DEFAULT_FONT
 
     # Draw a light grey background
-    background = shapes.rounded_rectangle(
+    background = shape.rounded_rectangle(
         0, 0, error_window.width, error_window.height, 5, 5, 5, 5
     )
-    heading = shapes.rounded_rectangle(0, 0, error_window.width, 12, 5, 5, 0, 0)
-    error_window.brush = Colors.WHITE
-    error_window.draw(background)
+    heading = shape.rounded_rectangle(0, 0, error_window.width, 12, 5, 5, 0, 0)
+    error_window.pen = color.rgb(255, 255, 255)
+    error_window.shape(background)
 
-    error_window.brush = Colors.BLACK
-    error_window.draw(heading)
+    error_window.pen = color.rgb(100, 100, 100)
+    error_window.shape(heading)
 
-    error_window.brush = Colors.DARK_GRAY
+    error_window.pen = color.rgb(100, 100, 100)
     tw = 35
-    error_window.draw(
-        shapes.rounded_rectangle(
-            error_window.width - tw - 10, error_window.height - 12, tw, 12, 3, 3, 0, 0
+    error_window.shape(
+        shape.rounded_rectangle(
+            error_window.width - tw - 34, error_window.height - 12, tw, 12, 3, 3, 0, 0
         )
     )
 
-    error_window.brush = Colors.LIGHT_GRAY
+    error_window.pen = color.rgb(128, 128, 128)
     error_window.text(
-        "Okay", error_window.width - tw + 5 - 10, error_window.height - 12
+        "Okay", error_window.width - tw + 5 - 34, error_window.height - 12
     )
     y = 0
     error_window.text(title, 5, y)
     y += 17
 
-    error_window.brush = Colors.BLACK
+    error_window.pen = color.rgb(100, 100, 100)
     text_lines = wrap_and_measure(error_window, text, 12, error_window.width - 10)
     for line, _width in text_lines:
         error_window.text(line, 5, y)
@@ -586,6 +507,81 @@ def message(title, text, window=None):
 def warning(title, text):
     print(f"- ERROR: {text}")
     message(title, text)
+
+
+def load_font(font_file):
+    try:
+        return pixel_font.load(font_file)
+    except OSError:
+        return pixel_font.load(f"/rom/fonts/{font_file}.ppf")
+
+
+class ROMFonts:
+    def __getattr__(self, key):
+        try:
+            return pixel_font.load(f"/rom/fonts/{key}.ppf")
+        except OSError:
+            raise AttributeError(f"Font {key} not found!")
+
+    def __dir__(self):
+        return [f[:-4] for f in os.listdir("/rom/fonts") if f.endswith(".ppf")]
+
+
+rom_font = ROMFonts()
+
+# RTC
+rtc = pcf85063a.PCF85063A(machine.I2C())
+
+if time.localtime()[0] >= 2025:
+    localtime_to_rtc()
+
+elif rtc.datetime()[0] >= 2025:
+    rtc_to_localtime()
+
+
+display = ssd1680.SSD1680()
+
+# Import PicoSystem module constants to builtins,
+# so they are available globally.
+for k, v in picovector.__dict__.items():
+    if not k.startswith("__"):
+        setattr(builtins, k, v)
+
+
+ASSETS = "/system/assets"
+DEFAULT_FONT = rom_font.sins
+ERROR_FONT = rom_font.desert
+
+FG = color.rgb(255, 255, 255)
+BG = color.rgb(20, 40, 60)
+
+VBAT_SENSE = machine.ADC(machine.Pin.board.VBAT_SENSE)
+VBUS_DETECT = machine.Pin.board.VBUS_DETECT
+CHARGE_STAT = machine.Pin.board.CHARGE_STAT
+SENSE_1V1 = machine.ADC(machine.Pin.board.SENSE_1V1)
+
+BAT_MAX = 4.10
+BAT_MIN = 3.00
+
+HIRES = 1
+LORES = 0
+
+conversion_factor = 3.3 / 65536
+
+setattr(builtins, "screen", image(display.WIDTH, display.HEIGHT, memoryview(display)))
+screen.font = DEFAULT_FONT
+screen.pen = BG
+picovector.default_target = screen
+
+
+# Build in some badgeware helpers, so we don't have to "bw.lores" etc
+# note HIRES and LORES and mode are currently unused for Blinky
+for k in ("mode", "HIRES", "LORES", "SpriteSheet", "load_font", "rom_font"):
+    setattr(builtins, k, locals()[k])
+
+
+# Finally, build in badgeware as "bw" for less frequently used things
+setattr(builtins, "bw", sys.modules["badgeware"])
 
 
 if __name__ == "__main__":
