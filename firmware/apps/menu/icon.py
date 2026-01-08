@@ -1,11 +1,9 @@
-from badgeware import brushes, shapes, Matrix, screen
-
 # icon colours
-bold = brushes.color(0, 0, 0 << 6)
-faded = brushes.color(0, 0, 2 << 6)
+bold = color.rgb(0, 0, 0 << 6)
+faded = color.rgb(0, 0, 2 << 6)
 
 # icon shape
-shade_brush = brushes.color(0, 0, 1 << 6)
+shade_brush = color.rgb(0, 0, 1 << 6)
 
 
 class Icon:
@@ -28,26 +26,28 @@ class Icon:
         sprite_width = self.icon.width * 2
         sprite_offset = sprite_width / 2
 
-        squircle = shapes.squircle(0, 0, 34, 4)
+        squircle = shape.squircle(0, 0, 34, 4)
 
         # transform to the icon position
-        squircle.transform = Matrix().translate(*self.pos).scale(width, 1)
+        squircle.transform = mat3().translate(*self.pos).scale(width, 1)
 
         screen.brush = faded
 
-        screen.draw(squircle)
+        screen.shape(squircle)
 
         if self.active:
             screen.brush = bold
-            screen.draw(squircle.stroke(2))
+            screen.shape(squircle.stroke(2))
 
         # draw the icon sprite
         if sprite_width > 0:
             self.icon.alpha = 255 if self.active else 100
-            screen.scale_blit(
+            screen.blit(
                 self.icon,
-                self.pos[0] - sprite_offset,
-                self.pos[1] - 25,
-                sprite_width,
-                48,
+                rect(
+                    self.pos[0] - sprite_offset,
+                    self.pos[1] - 25,
+                    sprite_width,
+                    48
+                )
             )
