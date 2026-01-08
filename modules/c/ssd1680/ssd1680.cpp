@@ -4,11 +4,9 @@
 #include <math.h>
 #include <string.h>
 
-extern uint32_t framebuffer[];
-
 #ifdef MICROPY_BUILD_TYPE
 extern "C" {
-extern void mp_handle_pending(bool);
+#include "py/runtime.h"
 }
 #endif
 
@@ -16,7 +14,9 @@ namespace pimoroni {
   constexpr int WIDTH = 264;
   constexpr int HEIGHT = 176;
 
-  uint8_t backbuffer[(WIDTH * HEIGHT) / 8];
+  uint32_t __attribute__((section(".uninitialized_data"))) __attribute__((aligned (4))) framebuffer[WIDTH * HEIGHT];
+
+  uint8_t __attribute__((section(".uninitialized_data"))) backbuffer[(WIDTH * HEIGHT) / 8];
 
   enum reg {
     DOC      = 0x01,  // Set Gate Driver Output

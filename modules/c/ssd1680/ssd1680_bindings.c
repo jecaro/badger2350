@@ -13,6 +13,8 @@ static const mp_rom_map_elem_t ssd1680_locals[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&ssd1680_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_command), MP_ROM_PTR(&ssd1680_command_obj) },
     { MP_ROM_QSTR(MP_QSTR_speed), MP_ROM_PTR(&ssd1680_update_speed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WIDTH), MP_ROM_INT(264) },
+    { MP_ROM_QSTR(MP_QSTR_HEIGHT), MP_ROM_INT(176) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_ssd1680_locals, ssd1680_locals);
 
