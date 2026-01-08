@@ -1,18 +1,19 @@
 export TERM=${TERM:="xterm-256color"}
 
-# cache buster 2025-10-16
+# cache buster: 2025-10-08
 
 MICROPYTHON_FLAVOUR="pimoroni"
-MICROPYTHON_VERSION="bw-1.26.0"
+MICROPYTHON_VERSION="bw-1.27.0"
 
 PIMORONI_PICO_FLAVOUR="pimoroni"
-PIMORONI_PICO_VERSION="0a66e430514b1af3e885e7383b4c99705989e84a"
+PIMORONI_PICO_VERSION="37a1b6500f77924b2a3287009734bb24d4809bf1"
 
-PY_DECL_VERSION="v0.0.3"
-DIR2UF2_VERSION="feature/custom-fs"
+PY_DECL_VERSION="v0.0.5"
+DIR2UF2_VERSION="v0.1.0"
 FFSMAKE_VERSION="main"
 
 BOARD="badger"
+
 
 function log_success {
 	echo -e "$(tput setaf 2)$1$(tput sgr0)"
@@ -114,6 +115,10 @@ EOF
 function ci_cmake_configure {
     TOOLS_DIR="$CI_BUILD_ROOT/tools"
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
+    if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
+        log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_configure <board_name>."
+        return 1
+    fi
     BUILD_DIR="$CI_BUILD_ROOT/build-$BOARD"
     cmake -S $CI_BUILD_ROOT/micropython/ports/rp2 -B "$BUILD_DIR" \
     -DPICOTOOL_FORCE_FETCH_FROM_GIT=1 \
@@ -131,6 +136,10 @@ function ci_cmake_configure {
 
 function ci_cmake_build {
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
+    if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
+        log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_build <board_name>."
+        return 1
+    fi
 
     ci_genversion $BOARD
 
@@ -143,12 +152,12 @@ function ci_cmake_build {
         CI_RELEASE_FILENAME=$BOARD
     fi
 
-    log_inform "Copying .uf2 to $(pwd)/$CI_RELEASE_FILENAME.uf2"
-    cp "$BUILD_DIR/firmware.uf2" $CI_RELEASE_FILENAME.uf2
+    log_inform "Copying -romfs.uf2 to $(pwd)/$CI_RELEASE_FILENAME.uf2"
+    cp "$BUILD_DIR/firmware-romfs.uf2" $CI_RELEASE_FILENAME.uf2
 
-    if [ -f "$BUILD_DIR/firmware-with-filesystem.uf2" ]; then
-        log_inform "Copying -with-filesystem .uf2 to $(pwd)/$CI_RELEASE_FILENAME-with-filesystem.uf2"
-        cp "$BUILD_DIR/firmware-with-filesystem.uf2" $CI_RELEASE_FILENAME-with-filesystem.uf2
+    if [ -f "$BUILD_DIR/firmware-romfs-with-filesystem.uf2" ]; then
+        log_inform "Copying romfs-with-filesystem .uf2 to $(pwd)/$CI_RELEASE_FILENAME-with-filesystem.uf2"
+        cp "$BUILD_DIR/firmware-romfs-with-filesystem.uf2" $CI_RELEASE_FILENAME-with-filesystem.uf2
     fi
 }
 
