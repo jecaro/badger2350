@@ -31,12 +31,12 @@ class Icon:
         # transform to the icon position
         squircle.transform = mat3().translate(*self.pos).scale(width, 1)
 
-        screen.brush = faded
+        screen.pen = faded
 
         screen.shape(squircle)
 
         if self.active:
-            screen.brush = bold
+            screen.pen = bold
             screen.shape(squircle.stroke(2))
 
         # draw the icon sprite
