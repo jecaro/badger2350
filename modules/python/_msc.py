@@ -23,30 +23,30 @@ class DiskMode():
         screen.pen = background
         screen.clear()
 
-    if large_font:
-        screen.font = large_font
-        screen.pen = white
-        center_text("USB Disk Mode", 5)
-
-        screen.text("1:", 10, 25)
-        screen.text("2:", 10, 45)
-        screen.text("3:", 10, 65)
-
-        screen.pen = white
-        screen.font = small_font
-        wrap_text("""Your badge is now mounted as a disk""", 30, 28)
-
-        wrap_text("""Copy code onto it to experiment!""", 30, 48)
-
-        wrap_text("""Eject the disk to reboot your badge""", 30, 68)
-
-        screen.font = small_font
-        if self.transferring:
+        if large_font:
+            screen.font = large_font
             screen.pen = white
-            center_text("Transferring data!", 102)
-        else:
-            screen.pen = faded
-            center_text("Waiting for data", 102)
+            center_text("USB Disk Mode", 5)
+
+            screen.text("1:", 10, 25)
+            screen.text("2:", 10, 45)
+            screen.text("3:", 10, 65)
+
+            screen.pen = white
+            screen.font = small_font
+            wrap_text("""Your badge is now mounted as a disk""", 30, 28)
+
+            wrap_text("""Copy code onto it to experiment!""", 30, 48)
+
+            wrap_text("""Eject the disk to reboot your badge""", 30, 68)
+
+            screen.font = small_font
+            if self.transferring:
+                screen.pen = white
+                center_text("Transferring data!", 102)
+            else:
+                screen.pen = faded
+                center_text("Waiting for data", 102)
 
 
 def center_text(text, y):
