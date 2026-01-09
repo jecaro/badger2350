@@ -14,13 +14,14 @@ except OSError:
     small_font = None
     large_font = None
 
-class DiskMode():
-  def __init__(self):
-    self.transferring = False
 
-  def draw(self):
-    screen.pen = background
-    screen.clear()
+class DiskMode():
+    def __init__(self):
+        self.transferring = False
+
+    def draw(self):
+        screen.pen = background
+        screen.clear()
 
     if large_font:
         screen.font = large_font
@@ -47,26 +48,29 @@ class DiskMode():
             screen.pen = faded
             center_text("Waiting for data", 102)
 
+
 def center_text(text, y):
-  w, h = screen.measure_text(text)
-  screen.text(text, 80 - (w / 2), y)
+    w, h = screen.measure_text(text)
+    screen.text(text, 80 - (w / 2), y)
+
 
 def wrap_text(text, x, y):
-  lines = text.splitlines()
-  for line in lines:
-    _, h = screen.measure_text(line)
-    screen.text(line, x, y)
-    y += h * 0.8
+    lines = text.splitlines()
+    for line in lines:
+        _, h = screen.measure_text(line)
+        screen.text(line, x, y)
+        y += h * 0.8
 
 
 disk_mode = DiskMode()
 
+
 def update():
-  # set transfer state here
-  disk_mode.transferring = rp2.is_msc_busy()
+    # set transfer state here
+    disk_mode.transferring = rp2.is_msc_busy()
 
-  # draw the ui
-  disk_mode.draw()
+    # draw the ui
+    disk_mode.draw()
 
 
-run(update)
+run(update, sleep_timeout=False)

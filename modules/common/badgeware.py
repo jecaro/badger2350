@@ -128,15 +128,16 @@ def clamp(v, vmin, vmax):
 
 def rnd(v1, v2=None):
     if v2:
-      return random.randint(v1, v2)
+        return random.randint(v1, v2)
     else:
-      return random.randint(0, v1)
+        return random.randint(0, v1)
+
 
 def frnd(v1, v2=None):
     if v2:
-      return random.uniform(v1, v2)
+        return random.uniform(v1, v2)
     else:
-      return random.uniform(0, v1)
+        return random.uniform(0, v1)
 
 
 def file_exists(path):
@@ -333,18 +334,6 @@ def get_battery_level():
     return min(100, max(0, round(123 - (123 / pow((1 + pow((voltage / 3.2), 80)), 0.165)))))
 
 
-def get_battery_level():
-    # Use the battery voltage to estimate the remaining percentage
-
-    # Get the average reading over 20 samples from our VBAT and VREF
-    voltage = sample_adc_u16(VBAT_SENSE, 10) * conversion_factor * 2
-    vref = sample_adc_u16(SENSE_1V1, 10) * conversion_factor
-    voltage = voltage / vref * 1.1
-
-    # Return the battery level as a percentage
-    return min(100, max(0, round(123 - (123 / pow((1 + pow((voltage / 3.2), 80)), 0.165)))))
-
-
 def get_disk_usage(mountpoint="/"):
     # f_bfree and f_bavail should be the same?
     # f_files, f_ffree, f_favail and f_flag are unsupported.
@@ -362,57 +351,13 @@ def get_disk_usage(mountpoint="/"):
     return f_total_size, f_used, f_free
 
 
-class State:
-    @staticmethod
-    def delete(app):
-        try:
-            os.remove("/state/{}.json".format(app))
-        except OSError:
-            pass
-
-    @staticmethod
-    def save(app, data):
-        try:
-            with open("/state/{}.json".format(app), "w") as f:
-                f.write(json.dumps(data))
-                f.flush()
-        except OSError:
-            import os
-
-            try:
-                os.stat("/state")
-            except OSError:
-                os.mkdir("/state")
-                State.save(app, data)
-
-    @staticmethod
-    def modify(app, data):
-        state = {}
-        State.load(app, state)
-        state.update(data)
-        State.save(app, state)
-
-    @staticmethod
-    def load(app, defaults):
-        try:
-            data = json.loads(open("/state/{}.json".format(app), "r").read())
-            if type(data) is dict:
-                defaults.update(data)
-                return True
-        except (OSError, ValueError):
-            pass
-
-        State.save(app, defaults)
-        return False
-
-
 def mode(mode, force=False):
     # TODO: Possible hires mode with optional matrix transform or similar?
     #       ie: hires working image gets blitted onto a lores screen.
     pass
 
 
-def run(update, init=None, on_exit=None, auto_clear=True):
+def run(update, init=None, on_exit=None, auto_clear=True, sleep_timeout=True):
     screen.font = DEFAULT_FONT
     screen.clear(BG)
     screen.pen = FG
@@ -435,7 +380,7 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                     io.poll()
                     if io.pressed:
                         break
-                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS:
+                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and sleep_timeout:
                         if on_exit:
                             on_exit()
                         powman.sleep()  # ???
