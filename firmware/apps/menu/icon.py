@@ -1,6 +1,6 @@
 # icon colours
 bold = color.rgb(0, 0, 0 << 6)
-faded = color.rgb(0, 0, 2 << 6)
+faded = color.rgb(0, 0, 3 << 6)
 
 # icon shape
 shade_brush = color.rgb(0, 0, 1 << 6)
@@ -22,17 +22,19 @@ class Icon:
             Icon.active_icon = self
 
     def draw(self):
-        width = 1
         sprite_width = self.icon.width * 2
         sprite_offset = sprite_width / 2
 
-        squircle = shape.squircle(0, 0, 34, 4)
+        squircle = shape.rectangle(0, 0, 64, 64)
 
         # transform to the icon position
-        squircle.transform = mat3().translate(*self.pos).scale(width, 1)
+        x, y = self.pos
+        squircle.transform = mat3().translate(x - 30, y - 30)
+        screen.pen = bold
+        screen.shape(squircle)
 
+        squircle.transform = mat3().translate(x - 32, y - 32)
         screen.pen = faded
-
         screen.shape(squircle)
 
         if self.active:

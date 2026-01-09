@@ -66,7 +66,7 @@ def update():
         state["running"] = f"/system/apps/{apps[state["active"]][1]}"
         State.modify("menu", state)
         return state["running"]
-    
+
     if icons:
         state["active"] %= len(icons)
 
@@ -85,9 +85,9 @@ def update():
         label = f"{Icon.active_icon.name}"
         w, _ = screen.measure_text(label)
         screen.pen = color.rgb(0, 0, 0)
-        screen.shape(shape.rounded_rectangle((screen.width / 2) - (w / 2) - 4, screen.height - 20, w + 8, 15, 4))
+        screen.shape(shape.rectangle((screen.width / 2) - (w / 2) - 4, screen.height - 15, w + 8, 15))
         screen.pen = color.rgb(255, 255, 255)
-        screen.text(label, (screen.width / 2) - (w / 2), screen.height - 19)
+        screen.text(label, (screen.width / 2) - (w / 2), screen.height - 15)
 
     return None
 
