@@ -365,11 +365,11 @@ def run(update, init=None, on_exit=None, auto_clear=True, sleep_timeout=True):
         if init:
             init()
         try:
+            io.poll()
             while True:
                 if auto_clear:
                     screen.clear(BG)
                     screen.pen = FG
-                io.poll()
                 if (result := update()) is not None:
                     return result
                 gc.collect()
