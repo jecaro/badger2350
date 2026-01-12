@@ -111,4 +111,4 @@ def on_exit():
 
 
 if __name__ == "__main__":
-    run(update, sleep_timeout=False)
+    run(update)
