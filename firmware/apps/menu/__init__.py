@@ -17,8 +17,8 @@ import ui
 # - reorder them
 # - what would mona do...?
 apps = [
-    ("mona's quest", "quest"),
-    ("mona pet", "monapet"),
+    ("Hydrate", "hydrate"),
+    ("Badge", "badge"),
     ("monasketch", "sketch"),
     ("flappy mona", "flappy"),
     ("gallery", "gallery"),
