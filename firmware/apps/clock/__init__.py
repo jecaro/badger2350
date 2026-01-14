@@ -133,8 +133,11 @@ def update_time(region, timezone):
     # Set the time with npt and pass it to the daylight saving calculator.
     # Pass the result to the unit's RTC.
 
-    ntptime.settime()
-    time.sleep(2)
+    try:
+        ntptime.settime()
+        time.sleep(2)
+    except OSError:
+        return False
 
     timezone_minutes = timezone * 60
 
@@ -692,12 +695,14 @@ def update():
     elif io.BUTTON_B in io.pressed or time.gmtime()[0] <= 2021:
         if get_connection_details():
             if wlan_start():
-                update_time(REGION, TIMEZONE)
-                user_message("Update", ["Updated time", "from NTP server."])
-                rtc.set_timer(8)
+                if not update_time(REGION, TIMEZONE):
+                    user_message("Error!", "Unable to get time", "from NTP server.")
+                else:
+                    user_message("Update", ["Updated time", "from NTP server."])
+                rtc.set_timer(5)
             else:
                 bullet_list("Connection Failed!", ["""Could not connect\nto the WiFi network.\n:-(""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
-                rtc.set_timer(10)
+                rtc.set_timer(5)
         else:
             bullet_list("Missing Details!", ["""Put your badge into\ndisk mode (tap\nRESET twice)""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
             rtc.set_timer(10)
