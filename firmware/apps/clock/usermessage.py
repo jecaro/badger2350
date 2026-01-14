@@ -2,8 +2,8 @@
 
 black = color.rgb(0, 0, 0)
 white = color.rgb(235, 245, 255)
-small_font = pixel_font.load("/system/assets/fonts/ark.ppf")
-large_font = pixel_font.load("/system/assets/fonts/absolute.ppf")
+small_font = pixel_font.load("/system/assets/fonts/awesome.ppf")
+large_font = pixel_font.load("/system/assets/fonts/ignore.ppf")
 
 
 def center_text(text, y):
@@ -55,8 +55,8 @@ def user_message(header, lines):
     center_text(header, 5)
 
     screen.font = small_font
-    line_spacing = 8
-    ty = 20
+    line_spacing = 15
+    ty = 30
 
     for line in lines:
         center_text(line, ty)
@@ -75,8 +75,8 @@ def bullet_list(header, bullet_points):
     screen.pen = white
     center_text(header, 5)
 
-    ty = 23
-    line_spacing = 30
+    ty = 40
+    line_spacing = 45
 
     for i, b in enumerate(bullet_points):
         num = i + 1
