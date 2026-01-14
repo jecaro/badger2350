@@ -1,5 +1,7 @@
 # A little library of methods to display text on the screen in mildly fancy ways.
 
+from badgeware import display
+
 black = color.rgb(0, 0, 0)
 white = color.rgb(235, 245, 255)
 small_font = pixel_font.load("/system/assets/fonts/awesome.ppf")
@@ -61,6 +63,8 @@ def user_message(header, lines):
     for line in lines:
         center_text(line, ty)
         ty += line_spacing
+
+    display.update()
 
 
 def bullet_list(header, bullet_points):

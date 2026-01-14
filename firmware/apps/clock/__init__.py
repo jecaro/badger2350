@@ -203,6 +203,8 @@ def wlan_start():
 
         print("Connecting to WiFi...")
 
+        user_message("Please Wait!", ["Connecting to", "WiFi network"])
+
     connected = wlan.isconnected()
 
     if io.ticks - ticks_start < WIFI_TIMEOUT * 1000:
@@ -695,46 +697,43 @@ def update():
     elif io.BUTTON_B in io.pressed or time.gmtime()[0] <= 2021:
         if get_connection_details():
             if wlan_start():
-                if not update_time(REGION, TIMEZONE):
-                    user_message("Error!", "Unable to get time", "from NTP server.")
+                if update_time(REGION, TIMEZONE) is False:
+                    user_message("Error!", ["Unable to get time", "from NTP server."])
                 else:
                     user_message("Update", ["Updated time", "from NTP server."])
-                rtc.set_timer(5)
             else:
                 bullet_list("Connection Failed!", ["""Could not connect\nto the WiFi network.\n:-(""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
-                rtc.set_timer(5)
         else:
             bullet_list("Missing Details!", ["""Put your badge into\ndisk mode (tap\nRESET twice)""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
             rtc.set_timer(10)
     # And then we detect button presses and act accordingly.
-    else:
-        if io.BUTTON_UP in io.pressed or io.BUTTON_DOWN in io.pressed:
-            state["dark_mode"] = not state["dark_mode"]
-            write_settings()
-            switch_palette()
+    if io.BUTTON_UP in io.pressed or io.BUTTON_DOWN in io.pressed:
+        state["dark_mode"] = not state["dark_mode"]
+        write_settings()
+        switch_palette()
 
-        elif io.BUTTON_C in io.pressed:
-            state["clock_style"] += 1
-            if state["clock_style"] > 4:
-                state["clock_style"] = 1
-            write_settings()
+    elif io.BUTTON_C in io.pressed:
+        state["clock_style"] += 1
+        if state["clock_style"] > 4:
+            state["clock_style"] = 1
+        write_settings()
 
-        elif io.BUTTON_A in io.pressed:
-            state["clock_style"] -= 1
-            if state["clock_style"] < 1:
-                state["clock_style"] = 4
-            write_settings()
+    elif io.BUTTON_A in io.pressed:
+        state["clock_style"] -= 1
+        if state["clock_style"] < 1:
+            state["clock_style"] = 4
+        write_settings()
 
-        # We then get the current time, and set an RTC alarm to wake up at the start of
-        # the next minute and run all this again, so the clock can update.
-        currenttime = rtc.datetime()
-        minutes = (currenttime[4] + 1) % 60
-        hours = currenttime[3]
-        if minutes == 0:
-            hours += 1
-        hours = hours % 24
-        rtc.set_alarm(0, minutes, hours)
-        display_time()
+    # We then get the current time, and set an RTC alarm to wake up at the start of
+    # the next minute and run all this again, so the clock can update.
+    currenttime = rtc.datetime()
+    minutes = (currenttime[4] + 1) % 60
+    hours = currenttime[3]
+    if minutes == 0:
+        hours += 1
+    hours = hours % 24
+    rtc.set_alarm(0, minutes, hours)
+    display_time()
 
 
 def init():
