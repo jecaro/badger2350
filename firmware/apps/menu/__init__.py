@@ -15,17 +15,15 @@ import ui
 # - hack them!
 # - replace them with your own
 # - reorder them
-# - what would mona do...?
 apps = [
-    ("Hydrate", "hydrate"),
-    ("Badge", "badge"),
-    ("monasketch", "sketch"),
-    ("flappy mona", "flappy"),
+    ("hydrate", "hydrate"),
+    ("badge", "badge"),
+    ("clock", "clock"),
+    ("clock", "clock"),
     ("gallery", "gallery"),
     ("badge", "badge"),
 ]
 
-mona = SpriteSheet("/system/assets/mona-sprites/mona-default.png", 11, 1)
 screen.font = rom_font.ark
 # screen.antialias = image.X2
 
