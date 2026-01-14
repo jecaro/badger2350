@@ -4,12 +4,12 @@ import os
 sys.path.insert(0, "/system/apps/clock")
 os.chdir("/system/apps/clock")
 
-from badgeware import io, brushes, shapes, Image, run, PixelFont, screen, SpriteSheet, State, rtc
-import ezwifi
+from badgeware import run, SpriteSheet, State, rtc
+import network
 import time
 import ntptime
-from daylightsaving import *
-from usermessage import *
+from daylightsaving import DaylightSavingPolicy, DaylightSaving
+from usermessage import user_message, center_text, bullet_list, stretch_text
 from machine import RTC, Pin
 import math
 
@@ -40,6 +40,9 @@ WIFI_PASSWORD = None
 WIFI_SSID = None
 REGION = None
 TIMEZONE = None
+wlan = None
+connected = False
+ticks_start = None
 
 # Setting up default values for the first run, and loading in the state with the
 # user choices if the file's there.
@@ -49,26 +52,19 @@ state = {
     "first_run": True
 }
 
-if State.load("clock", state):
-    dark_mode = state["dark_mode"]
-    clock_style = state["clock_style"]
-    first_run = state["first_run"]
-else:
-    dark_mode = True
-    clock_style = 4
-    first_run = True
+State.load("clock", state)
 
-if first_run:
+if state["first_run"]:
     icons = SpriteSheet("assets/icons.png", 5, 1)
 
 # Loading all the assets.
-textclock_font = PixelFont.load("/system/assets/fonts/ziplock.ppf")
-dots_font = PixelFont.load("/system/assets/fonts/futile.ppf")
-scribble_font = PixelFont.load("/system/assets/fonts/ziplock.ppf")
+textclock_font = pixel_font.load("/system/assets/fonts/ziplock.ppf")
+dots_font = pixel_font.load("/system/assets/fonts/futile.ppf")
+scribble_font = pixel_font.load("/system/assets/fonts/ziplock.ppf")
 
-palette = (brushes.color(44, 44, 44), brushes.color(44, 44, 44, 100), brushes.color(255, 255, 255), brushes.color(255, 255, 255, 100))
+palette = (color.rgb(44, 44, 44), color.rgb(44, 44, 44, 100), color.rgb(255, 255, 255), color.rgb(255, 255, 255, 100))
 
-if dark_mode:
+if state["dark_mode"]:
     faded_brush = palette[3]
     bg_brush = palette[0]
     drawing_brush = palette[2]
@@ -77,14 +73,14 @@ else:
     bg_brush = palette[2]
     drawing_brush = palette[0]
 
-if clock_style == DisplayType.scribble:
+if state["clock_style"] == DisplayType.scribble:
     numerals = SpriteSheet("assets/scribble_num.png", 10, 1)
-    background = Image.load("assets/scribble_bg.png")
-    clock_dots = Image.load("assets/scribble_dots.png")
-elif clock_style == DisplayType.sevenseg:
+    background = image.load("assets/scribble_bg.png")
+    clock_dots = image.load("assets/scribble_dots.png")
+elif state["clock_style"] == DisplayType.sevenseg:
     numerals = SpriteSheet("assets/digital_num.png", 10, 1)
     background = None
-    clock_dots = Image.load("assets/digital_dots.png")
+    clock_dots = image.load("assets/digital_dots.png")
 
 month_days = {
     1: 31,
@@ -157,50 +153,60 @@ def update_time(region, timezone):
     return True
 
 
+def _is_valid_details():
+    return all([WIFI_SSID, WIFI_PASSWORD, REGION]) and isinstance(TIMEZONE, int)
+
+
 def get_connection_details():
     # Get WiFi details from secrets.py.
 
     global WIFI_PASSWORD, WIFI_SSID, REGION, TIMEZONE
 
-    if WIFI_PASSWORD is not None and WIFI_SSID is not None and REGION is not None and TIMEZONE is not None:
+    if _is_valid_details():
         return True
+
     try:
-        sys.path.insert(0, "/")
+        sys.path.insert(0, "/system")
         from secrets import WIFI_PASSWORD, WIFI_SSID, REGION, TIMEZONE
         sys.path.pop(0)
-    except ImportError:
+    except ImportError as e:
+        print(e)
         WIFI_PASSWORD = None
         WIFI_SSID = None
         REGION = None
         TIMEZONE = None
-
-    if not WIFI_PASSWORD:
         return False
 
-    if not WIFI_SSID:
-        return False
-
-    if not REGION:
-        return False
-
-    # This check is different from the others because TIMEZONE is an
-    # integer that can be zero, so we have to specifically check for null.
-    if TIMEZONE is None:
-        return False
-
-    return True
+    return _is_valid_details()
 
 
 def wlan_start():
-    # Fire up the WiFi.
+    global wlan, ticks_start, connected, WIFI_PASSWORD, WIFI_SSID
 
-    def connect_handler(wifi):
+    if ticks_start is None:
+        ticks_start = io.ticks
+
+    if connected:
         return True
 
-    def failed_handler(wifi):
-        return False
+    if wlan is None:
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
 
-    ezwifi.connect(connected=connect_handler, failed=failed_handler)
+        if wlan.isconnected():
+            return True
+
+        wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+
+        print("Connecting to WiFi...")
+
+    connected = wlan.isconnected()
+
+    if io.ticks - ticks_start < WIFI_TIMEOUT * 1000:
+        if connected:
+            return True
+    elif not connected:
+        return False
 
     return True
 
@@ -212,24 +218,24 @@ def display_time():
 
     currenttime = rtc.datetime()
 
-    if clock_style == DisplayType.textclock:
+    if state["clock_style"] == DisplayType.textclock:
         draw_text_clock(currenttime)
 
-    elif clock_style == DisplayType.dotsclock:
+    elif state["clock_style"] == DisplayType.dotsclock:
         draw_dots_clock(currenttime)
 
     # For the scribble and seven segment displays, we're reusing the same variables
     # for numerals, dots etc and just loading different files into them to save memory.
-    elif clock_style == DisplayType.scribble:
+    elif state["clock_style"] == DisplayType.scribble:
         numerals = SpriteSheet("assets/scribble_num.png", 10, 1)
-        background = Image.load("assets/scribble_bg.png")
-        clock_dots = Image.load("assets/scribble_dots.png")
+        background = image.load("assets/scribble_bg.png")
+        clock_dots = image.load("assets/scribble_dots.png")
         screen.font = scribble_font
         draw_scribble_clock(currenttime)
 
-    elif clock_style == DisplayType.sevenseg:
+    elif state["clock_style"] == DisplayType.sevenseg:
         numerals = SpriteSheet("assets/digital_num.png", 10, 1)
-        clock_dots = Image.load("assets/digital_dots.png")
+        clock_dots = image.load("assets/digital_dots.png")
         background = None
         draw_sevenseg_clock(currenttime)
 
@@ -237,26 +243,26 @@ def display_time():
 def draw_sevenseg_clock(currenttime):
     # For Badger's seven segment clock, the numerals are PNGs.
 
-    screen.antialias = Image.X4
+    screen.antialias = image.X4
 
     # This is how far out from the centre each set of digits gets moved to make room for the dots.
     digit_offset = 6
 
     # This doesn't use light mode, so we disable it here.
     this_drawing_brush = bg_brush
-    this_bg_brush = brushes.color(0, 0, 0)
-    if dark_mode:
+    this_bg_brush = color.rgb(0, 0, 0)
+    if state["dark_mode"]:
         this_drawing_brush = drawing_brush
-        this_bg_brush = brushes.color(0, 0, 0)
+        this_bg_brush = color.rgb(0, 0, 0)
 
     # Start with a blank slate.
-    screen.brush = this_bg_brush
+    screen.pen = this_bg_brush
     screen.clear()
 
     digit_h = numerals.sprite(0, 0).height
     digit_y = math.floor((screen.height - digit_h) / 2)
 
-    screen.brush = this_drawing_brush
+    screen.pen = this_drawing_brush
 
     # The whole next section draws bars of increasing thickness diagonally
     # across the screen, as well as the filled in sections to the sides.
@@ -273,21 +279,21 @@ def draw_sevenseg_clock(currenttime):
     seconds_x_start = rightx + seconds_spacing
     seconds_y_start = 0
     seconds_xy_offset = digit_y - 8
-    screen.draw(shapes.custom([
-        (seconds_x_start, seconds_y_start),
-        (screen.width, seconds_y_start),
-        (screen.width, seconds_xy_offset),
-        (seconds_x_start + seconds_xy_offset - seconds_y_start, seconds_xy_offset)
+    screen.shape(shape.custom([
+        point(seconds_x_start, seconds_y_start),
+        point(screen.width, seconds_y_start),
+        point(screen.width, seconds_xy_offset),
+        point(seconds_x_start + seconds_xy_offset - seconds_y_start, seconds_xy_offset)
     ]))
 
     # Draws the stripes increasing in thiccness until it gets to half way down the screen.
     while y <= screen.height / 2:
-        seg_path = [(leftx, y),
-                    (rightx, y),
-                    (rightx + offset, y + offset),
-                    (leftx + offset, y + offset)]
-        seg = shapes.custom(seg_path)
-        screen.draw(seg)
+        seg_path = [point(leftx, y),
+                    point(rightx, y),
+                    point(rightx + offset, y + offset),
+                    point(leftx + offset, y + offset)]
+        seg = shape.custom(seg_path)
+        screen.shape(seg)
         offset += 1
         y += 2 * offset
         leftx += 2 * offset
@@ -299,29 +305,29 @@ def draw_sevenseg_clock(currenttime):
 
     # Then the lower left filled area...
     seconds_x_start = leftx - seconds_spacing
-    screen.draw(shapes.custom([
-        (seconds_x_start, screen.height - seconds_y_start),
-        (0, screen.height - seconds_y_start),
-        (0, screen.height - seconds_xy_offset),
-        (seconds_x_start - seconds_xy_offset + seconds_y_start, screen.height - seconds_xy_offset)]))
+    screen.shape(shape.custom([
+        point(seconds_x_start, screen.height - seconds_y_start),
+        point(0, screen.height - seconds_y_start),
+        point(0, screen.height - seconds_xy_offset),
+        point(seconds_x_start - seconds_xy_offset + seconds_y_start, screen.height - seconds_xy_offset)]))
 
     # Just like above, draws stripes increasing in thiccness from the bottom of the screen.
     offset = 0
     while y >= 60:
-        seg_path = [(leftx, y), (rightx, y), (rightx - offset, y - offset), (leftx - offset, y - offset)]
-        seg = shapes.custom(seg_path)
-        screen.draw(seg)
+        seg_path = [point(leftx, y), point(rightx, y), point(rightx - offset, y - offset), point(leftx - offset, y - offset)]
+        seg = shape.custom(seg_path)
+        screen.shape(seg)
         offset += 1
         y -= 2 * offset
         leftx -= 2 * offset
         rightx -= 2 * offset
 
     # Blank out the central section so we've a clean space to draw the digits.
-    screen.brush = this_bg_brush
-    screen.draw(shapes.rectangle(0, digit_y - seconds_spacing, screen.width, digit_h + (2 * seconds_spacing)))
+    screen.pen = this_bg_brush
+    screen.shape(shape.rectangle(0, digit_y - seconds_spacing, screen.width, digit_h + (2 * seconds_spacing)))
 
     # Draw the dots in between the numerals.
-    screen.blit(clock_dots, (screen.width / 2) - (clock_dots.width / 2), digit_y)
+    screen.blit(clock_dots, point((screen.width / 2) - (clock_dots.width / 2), digit_y))
 
     # Then finally draw the digit sprites.
     hour = currenttime[3]
@@ -337,11 +343,11 @@ def draw_scribble_clock(currenttime):
     # It doesn't do dark mode, so here we're setting a new drawing brush
     # based on whichever regular brush is the bright one.
     this_drawing_brush = drawing_brush
-    if dark_mode:
+    if state["dark_mode"]:
         this_drawing_brush = bg_brush
 
     # First draw the background
-    screen.blit(background, 0, 0)
+    screen.blit(background, point(0, 0))
 
     # Then make up a string for the date and draw it.
     year = currenttime[0]
@@ -359,7 +365,7 @@ def draw_scribble_clock(currenttime):
 
     date = str(mday) + suffix + " " + month + " " + str(year)
 
-    screen.brush = this_drawing_brush
+    screen.pen = this_drawing_brush
     center_text(date, 155)
 
     # Draw the digits just like in the 7 segment clock...
@@ -370,7 +376,7 @@ def draw_scribble_clock(currenttime):
     digit_y = math.floor((screen.height - digit_h) / 2)
 
     draw_digits(hour, minute, numerals, 0, digit_y)
-    screen.blit(clock_dots, (screen.width / 2) - (clock_dots.width / 2), digit_y + 10)
+    screen.blit(clock_dots, point((screen.width / 2) - (clock_dots.width / 2), digit_y + 10))
 
 
 def draw_digits(hour, minute, spritesheet, center_offset, y_pos):
@@ -384,10 +390,10 @@ def draw_digits(hour, minute, spritesheet, center_offset, y_pos):
     minuteunits = minute % 10
 
     # ...and then use that to pick a sprite from the spritesheet of numerals.
-    screen.blit(spritesheet.sprite(hourtens, 0), 0 - center_offset, y_pos)
-    screen.blit(spritesheet.sprite(hourunits, 0), 66 - center_offset, y_pos)
-    screen.blit(spritesheet.sprite(minutetens, 0), 132 + center_offset, y_pos)
-    screen.blit(spritesheet.sprite(minuteunits, 0), 198 + center_offset, y_pos)
+    screen.blit(spritesheet.sprite(hourtens, 0), point(0 - center_offset, y_pos))
+    screen.blit(spritesheet.sprite(hourunits, 0), point(66 - center_offset, y_pos))
+    screen.blit(spritesheet.sprite(minutetens, 0), point(132 + center_offset, y_pos))
+    screen.blit(spritesheet.sprite(minuteunits, 0), point(198 + center_offset, y_pos))
 
 
 # This method draws a row of circles across a given width, sizing them so they fill the
@@ -412,23 +418,23 @@ def draw_dot_row(y, width, total, filled, space_size, space_every):
     w = int(total_width)
     h = int(dot_radius * 2)
 
-    dot_row = Image(0, 0, w, h)
-    dot_row.antialias = Image.X4
-    dot_row.brush = drawing_brush
+    dot_row = image(w, h)
+    dot_row.antialias = image.X4
+    dot_row.pen = drawing_brush
 
     # Now we just iterate through, drawing a dot and increasing the x co-ordinate each time.
     for i in range(total):
         if filled > i:
-            dot_row.brush = drawing_brush
+            dot_row.pen = drawing_brush
         else:
-            dot_row.brush = faded_brush
-        dot_row.draw(shapes.circle(dot_x, dot_radius, dot_radius))
+            dot_row.pen = faded_brush
+        dot_row.shape(shape.circle(dot_x, dot_radius, dot_radius))
         dot_x += (2 * dot_radius) + space_size
         if space_every > 0 and (i + 1) % space_every == 0:
             dot_x += space_size
 
     x_pos = ((screen.width - total_width) / 2)
-    screen.scale_blit(dot_row, x_pos, y, total_width, dot_radius * 2)
+    screen.blit(dot_row, point(x_pos, y))
 
     # We return the height of the row so we can add it to y for the next row.
     return dot_radius * 2
@@ -438,10 +444,10 @@ def draw_dots_clock(currenttime):
     # Drawing the dots clock just involves writing the text captions and
     # creating the rows of dots using the above method.
 
-    screen.antialias = Image.X4
+    screen.antialias = image.X4
     screen.font = dots_font
 
-    screen.brush = bg_brush
+    screen.pen = bg_brush
     screen.clear()
 
     row_spacing = 1
@@ -484,7 +490,7 @@ def draw_dots_clock(currenttime):
 def draw_text_clock(currenttime):
     # The text clock involves solely drawing text.
 
-    screen.brush = bg_brush
+    screen.pen = bg_brush
     screen.clear()
 
     screen.font = textclock_font
@@ -613,10 +619,10 @@ def draw_text_clock(currenttime):
         x = border
         for word in line:
             if word in displayed_time:
-                screen.brush = drawing_brush
+                screen.pen = drawing_brush
                 displayed_time.remove(word)
             else:
-                screen.brush = faded_brush
+                screen.pen = faded_brush
             screen.text(word, x, y)
             x += screen.measure_text(word)[0]
             x += round(x_spacing)
@@ -628,17 +634,17 @@ def intro_screen():
     # The intro screen only shows on the first run of Clock.
     # It just shows some icons to demonstrate what each button does.
 
-    screen.brush = brushes.color(0, 0, 0)
+    screen.pen = color.rgb(0, 0, 0)
     screen.clear()
 
-    screen.brush = brushes.color(255, 255, 255)
+    screen.pen = color.rgb(255, 255, 255)
     screen.font = textclock_font
     center_text("Welcome to Clock!", 3)
 
-    screen.scale_blit(icons.sprite(0, 0), 35, 144, 32, 32)
-    screen.scale_blit(icons.sprite(1, 0), 116, 144, 32, 32)
-    screen.scale_blit(icons.sprite(2, 0), 200, 144, 32, 32)
-    screen.scale_blit(icons.sprite(3, 0), 232, 30, 32, 32)
+    screen.blit(icons.sprite(0, 0), point(35, 144))
+    screen.blit(icons.sprite(1, 0), point(116, 144))
+    screen.blit(icons.sprite(2, 0), point(200, 144))
+    screen.blit(icons.sprite(3, 0), point(232, 30))
 
     screen.font = scribble_font
     center_text("Press any button", 40)
@@ -654,7 +660,7 @@ def switch_palette():
 
     global bg_brush, drawing_brush, faded_brush
 
-    if dark_mode:
+    if state["dark_mode"]:
         faded_brush = palette[3]
         bg_brush = palette[0]
         drawing_brush = palette[2]
@@ -666,25 +672,19 @@ def switch_palette():
 
 def write_settings():
     # Simply saves the user-selected options as a state.
-
-    state = {
-        "dark_mode": dark_mode,
-        "clock_style": clock_style,
-        "first_run": first_run
-    }
     State.save("clock", state)
 
 
 def update():
     # Main update loop.
 
-    global dark_mode, clock_style, first_run
+    global state
 
     # First we check if it's the first time of running, and if so show the intro screen.
     # Any face button press will move it into the regular running mode.
-    if first_run:
+    if state["first_run"]:
         intro_screen()
-        first_run = False
+        state["first_run"] = False
         write_settings()
 
     # If the year in the RTC is 2021 or earlier, we need to sync so it has the same effect as pressing B.
@@ -693,31 +693,31 @@ def update():
         if get_connection_details():
             if wlan_start():
                 update_time(REGION, TIMEZONE)
-                user_message("Update", "Updated time", "from NTP server.")
+                user_message("Update", ["Updated time", "from NTP server."])
                 rtc.set_timer(8)
             else:
-                bullet_list("Connection Failed!", """Could not connect\nto the WiFi network.\n:-(""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!""")
+                bullet_list("Connection Failed!", ["""Could not connect\nto the WiFi network.\n:-(""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
                 rtc.set_timer(10)
         else:
-            bullet_list("Missing Details!", """Put your badge into\ndisk mode (tap\nRESET twice)""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!""")
+            bullet_list("Missing Details!", ["""Put your badge into\ndisk mode (tap\nRESET twice)""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
             rtc.set_timer(10)
     # And then we detect button presses and act accordingly.
     else:
         if io.BUTTON_UP in io.pressed or io.BUTTON_DOWN in io.pressed:
-            dark_mode = not dark_mode
+            state["dark_mode"] = not state["dark_mode"]
             write_settings()
             switch_palette()
 
         elif io.BUTTON_C in io.pressed:
-            clock_style += 1
-            if clock_style > 4:
-                clock_style = 1
+            state["clock_style"] += 1
+            if state["clock_style"] > 4:
+                state["clock_style"] = 1
             write_settings()
 
         elif io.BUTTON_A in io.pressed:
-            clock_style -= 1
-            if clock_style < 1:
-                clock_style = 4
+            state["clock_style"] -= 1
+            if state["clock_style"] < 1:
+                state["clock_style"] = 4
             write_settings()
 
         # We then get the current time, and set an RTC alarm to wake up at the start of
@@ -732,5 +732,14 @@ def update():
         display_time()
 
 
+def init():
+    pass
+
+
+def on_exit():
+    pass
+
+
+# Standalone support for Thonny debugging
 if __name__ == "__main__":
-    run(update)
+    run(update, init=init, on_exit=on_exit)
