@@ -5,7 +5,7 @@ import math
 sys.path.insert(0, "/system/apps/hydrate")
 os.chdir("/system/apps/hydrate")
 
-from badgeware import run, State, clamp, display
+from badgeware import run, State, clamp
 
 CX = screen.width / 2
 CY = screen.height / 2
@@ -85,7 +85,7 @@ def draw_menu():
     # darken the background when the menu is showing
     if show_menu:
 
-        display.speed(3)
+        mode(FAST_UPDATE)
 
         screen.pen = WHITE
         screen.clear()
@@ -122,7 +122,8 @@ def init():
 def update():
     global state, show_menu, menu_value
 
-    display.speed(0)
+    mode(MEDIUM_UPDATE)
+
     screen.font = large_font
 
     if io.BUTTON_B in io.pressed:
