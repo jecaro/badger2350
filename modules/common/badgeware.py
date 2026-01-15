@@ -362,10 +362,7 @@ def mode(mode, force=False):
     _current_mode = mode
 
     # Set display update speed
-    if _current_mode & FAST_UPDATE:
-        display.speed(3)
-    if _current_mode & FULL_UPDATE:
-        display.speed(0)
+    display.speed((_current_mode >> 4) & 0xf)
 
     return True
 
@@ -518,13 +515,14 @@ BAT_MIN = 3.00
 
 HIRES = 1
 LORES = 0
-FAST_UPDATE = 1 << 4
-FULL_UPDATE = 2 << 4
+FAST_UPDATE = 3 << 4
+FULL_UPDATE = 0 << 4
+MEDIUM_UPDATE = 2 << 4
 
 conversion_factor = 3.3 / 65536
 
-_current_mode = FAST_UPDATE
-mode(FAST_UPDATE, True)
+_current_mode = MEDIUM_UPDATE
+mode(MEDIUM_UPDATE, True)
 
 setattr(builtins, "screen", image(display.WIDTH, display.HEIGHT, memoryview(display)))
 screen.font = DEFAULT_FONT
@@ -534,7 +532,7 @@ picovector.default_target = screen
 
 # Build in some badgeware helpers, so we don't have to "bw.lores" etc
 # note HIRES and LORES and mode are currently unused for Blinky
-for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "SpriteSheet", "load_font", "rom_font"):
+for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "SpriteSheet", "load_font", "rom_font"):
     setattr(builtins, k, locals()[k])
 
 
