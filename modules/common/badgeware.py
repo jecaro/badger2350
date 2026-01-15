@@ -56,10 +56,6 @@ def get_case_led(led=None):
     return _CASE_LIGHTS[led].duty_u16() / 65535
 
 
-def display_speed(value):
-    display.speed(value)
-
-
 def get_light():
     # TODO: Not supported
     return 0
@@ -358,9 +354,20 @@ def get_disk_usage(mountpoint="/"):
 
 
 def mode(mode, force=False):
-    # TODO: Possible hires mode with optional matrix transform or similar?
-    #       ie: hires working image gets blitted onto a lores screen.
-    pass
+    global _current_mode
+
+    if mode == _current_mode and not force:
+        return False
+
+    _current_mode = mode
+
+    # Set display update speed
+    if _current_mode & FAST_UPDATE:
+        display.speed(3)
+    if _current_mode & FULL_UPDATE:
+        display.speed(0)
+
+    return True
 
 
 def run(update, init=None, on_exit=None, auto_clear=True):
@@ -511,8 +518,13 @@ BAT_MIN = 3.00
 
 HIRES = 1
 LORES = 0
+FAST_UPDATE = 1 << 4
+FULL_UPDATE = 2 << 4
 
 conversion_factor = 3.3 / 65536
+
+_current_mode = FAST_UPDATE
+mode(FAST_UPDATE, True)
 
 setattr(builtins, "screen", image(display.WIDTH, display.HEIGHT, memoryview(display)))
 screen.font = DEFAULT_FONT
@@ -522,7 +534,7 @@ picovector.default_target = screen
 
 # Build in some badgeware helpers, so we don't have to "bw.lores" etc
 # note HIRES and LORES and mode are currently unused for Blinky
-for k in ("mode", "HIRES", "LORES", "SpriteSheet", "load_font", "rom_font"):
+for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "SpriteSheet", "load_font", "rom_font"):
     setattr(builtins, k, locals()[k])
 
 
