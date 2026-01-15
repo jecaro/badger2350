@@ -10,6 +10,9 @@ from badgeware import State, is_dir, file_exists, run
 from icon import Icon
 import ui
 
+# fast screen refresh for the menu
+mode(FAST_UPDATE)
+
 # define the list of installed apps
 #
 # - hack them!
