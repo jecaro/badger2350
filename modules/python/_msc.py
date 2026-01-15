@@ -73,4 +73,4 @@ def update():
     disk_mode.draw()
 
 
-run(update, sleep_timeout=False)
+run(update)

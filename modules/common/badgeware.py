@@ -14,6 +14,8 @@ import builtins
 
 import picovector
 
+display = ssd1680.SSD1680()
+
 SLEEP_TIMEOUT_MS = 5000
 
 _CASE_LIGHTS = [machine.PWM(machine.Pin.board.CL0), machine.PWM(machine.Pin.board.CL1),
@@ -52,6 +54,10 @@ def get_case_led(led=None):
         raise ValueError("LED out of range!")
 
     return _CASE_LIGHTS[led].duty_u16() / 65535
+
+
+def display_speed(value):
+    display.speed(value)
 
 
 def get_light():
@@ -357,7 +363,7 @@ def mode(mode, force=False):
     pass
 
 
-def run(update, init=None, on_exit=None, auto_clear=True, sleep_timeout=True):
+def run(update, init=None, on_exit=None, auto_clear=True):
     screen.font = DEFAULT_FONT
     screen.clear(BG)
     screen.pen = FG
@@ -380,12 +386,9 @@ def run(update, init=None, on_exit=None, auto_clear=True, sleep_timeout=True):
                     io.poll()
                     if io.pressed:
                         break
-                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and sleep_timeout:
-                        if on_exit:
-                            on_exit()
+                    # put the unit to sleep if button input times out and the unit is not connected via USB
+                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not VBUS_DETECT.value():
                         powman.sleep()  # ???
-        except KeyboardInterrupt:
-            pass
         finally:
             if on_exit:
                 on_exit()
@@ -483,8 +486,6 @@ if time.localtime()[0] >= 2025:
 elif rtc.datetime()[0] >= 2025:
     rtc_to_localtime()
 
-
-display = ssd1680.SSD1680()
 
 # Import PicoSystem module constants to builtins,
 # so they are available globally.
