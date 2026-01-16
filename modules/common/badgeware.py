@@ -397,6 +397,8 @@ def run(update, init=None, on_exit=None, auto_clear=True):
     screen.font = DEFAULT_FONT
     screen.clear(BG)
     screen.pen = FG
+    first_refresh = True
+
     try:
         if init:
             init()
@@ -414,7 +416,14 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                 if _current_mode & DITHER:
                     ordered_dither(memoryview(screen.raw), BAYER_MATRIX, DITHER_CANDIDATES)
 
+                if first_refresh:
+                    display.speed(0)
+
                 display.update()
+
+                if first_refresh:
+                    display.speed((_current_mode >> 4) & 0xf)
+                    first_refresh = False
 
                 # Wait for input or sleep
                 t_start = time.ticks_ms()
