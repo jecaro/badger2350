@@ -76,7 +76,7 @@ def update():
     id_body.transform = id_body.transform.translate(-120, 0)
     id_outline.transform = id_outline.transform.translate(-120, 0)
 
-    screen.pen = color.light_grey
+    screen.pen = color.dark_grey
     id_body.transform = id_body.transform.translate(4, 4)
     screen.shape(id_body)
 
