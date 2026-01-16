@@ -2,14 +2,8 @@ from badgeware import get_battery_level, is_charging
 
 
 def draw_background():
-    # draw over the corners in black ready for the rounded rectangle that makes
-    # up most of the background
-    screen.pen = color.black
-    screen.clear()
-
-    # draw the faux crt shape background area
     screen.pen = brush.pattern(color.white, color.dark_grey, 23)
-    screen.shape(shape.rectangle(0, 0, screen.width, screen.height))
+    screen.clear()
 
 
 def draw_header():

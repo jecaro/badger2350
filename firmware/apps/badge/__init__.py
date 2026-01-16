@@ -55,9 +55,8 @@ def update():
     x, y = card_pos
 
     # clear the screen
-    screen.clear()
     screen.pen = brush.pattern(color.white, color.black, pattern)
-    screen.shape(shape.rectangle(0, 0, screen.width, screen.height))
+    screen.clear()
 
     if io.BUTTON_B in io.pressed:
         rear_view = not rear_view

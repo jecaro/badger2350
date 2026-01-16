@@ -144,9 +144,8 @@ def update():
 
         menu_value = clamp(menu_value, 0, state["goal"])
 
-    screen.clear()
     screen.pen = background
-    screen.shape(shape.rectangle(0, 0, screen.width, screen.height))
+    screen.clear()
 
     draw_graph(CX, CY - 8, 75, state["current"])
     draw_menu()
