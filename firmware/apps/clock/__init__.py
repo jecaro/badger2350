@@ -58,11 +58,11 @@ if state["first_run"]:
     icons = SpriteSheet("assets/icons.png", 5, 1)
 
 # Loading all the assets.
-textclock_font = pixel_font.load("/system/assets/fonts/ziplock.ppf")
-dots_font = pixel_font.load("/system/assets/fonts/futile.ppf")
-scribble_font = pixel_font.load("/system/assets/fonts/ziplock.ppf")
+textclock_font = rom_font.ziplock
+dots_font = rom_font.futile
+scribble_font = rom_font.ziplock
 
-palette = (color.rgb(44, 44, 44), color.rgb(44, 44, 44, 100), color.rgb(255, 255, 255), color.rgb(255, 255, 255, 100))
+palette = (color.rgb(44, 44, 44), color.rgb(44, 44, 44, 100), color.white, color.rgb(255, 255, 255, 100))
 
 if state["dark_mode"]:
     faded_brush = palette[3]
@@ -255,10 +255,10 @@ def draw_sevenseg_clock(currenttime):
 
     # This doesn't use light mode, so we disable it here.
     this_drawing_brush = bg_brush
-    this_bg_brush = color.rgb(0, 0, 0)
+    this_bg_brush = color.black
     if state["dark_mode"]:
         this_drawing_brush = drawing_brush
-        this_bg_brush = color.rgb(0, 0, 0)
+        this_bg_brush = color.black
 
     # Start with a blank slate.
     screen.pen = this_bg_brush
@@ -639,10 +639,10 @@ def intro_screen():
     # The intro screen only shows on the first run of Clock.
     # It just shows some icons to demonstrate what each button does.
 
-    screen.pen = color.rgb(0, 0, 0)
+    screen.pen = color.black
     screen.clear()
 
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.white
     screen.font = textclock_font
     center_text("Welcome to Clock!", 3)
 

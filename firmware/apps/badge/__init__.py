@@ -30,7 +30,7 @@ for key in id_socials.keys():
 # id card variables
 id_body = shape.rectangle(0, 0, 240, 155, )
 id_outline = shape.rectangle(0, 0, 240, 155).stroke(2)
-background = brush.pattern(color.rgb(0, 0, 0), color.rgb(255, 255, 255), 6)
+background = brush.pattern(color.black, color.white, 6)
 rear_view = True
 card_pos = (10, 10)
 pattern = 25
@@ -56,7 +56,7 @@ def update():
 
     # clear the screen
     screen.clear()
-    screen.pen = brush.pattern(color.rgb(255, 255, 255), color.rgb(0, 0, 0), pattern)
+    screen.pen = brush.pattern(color.white, color.black, pattern)
     screen.shape(shape.rectangle(0, 0, screen.width, screen.height))
 
     if io.BUTTON_B in io.pressed:
@@ -76,21 +76,21 @@ def update():
     id_body.transform = id_body.transform.translate(-120, 0)
     id_outline.transform = id_outline.transform.translate(-120, 0)
 
-    screen.pen = color.rgb(50, 50, 50)
+    screen.pen = color.light_grey
     id_body.transform = id_body.transform.translate(4, 4)
     screen.shape(id_body)
 
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.white
     id_body.transform = id_body.transform.translate(-4, -4)
     screen.shape(id_body)
-    screen.pen = color.rgb(0, 0, 0)
+    screen.pen = color.black
     screen.shape(id_outline)
 
     photo_y = y + 18 + id_photo.height
     socials_y = 32
 
     # Draw the card information
-    screen.pen = color.rgb(0, 0, 0)
+    screen.pen = color.black
     if not rear_view:
         screen.font = large_font
         screen.blit(id_photo, point(CX - id_photo.width / 2, y + 15))
@@ -98,7 +98,7 @@ def update():
         screen.font = small_font
         center_text(id_role, photo_y + 31)
     else:
-        screen.pen = color.rgb(0, 0, 0)
+        screen.pen = color.black
         screen.font = small_font
         for account in id_socials.items():
             screen.blit(account[1]["icon"], point(30, socials_y))

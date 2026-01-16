@@ -15,11 +15,6 @@ state = {
     "goal": 2000
 }
 
-
-WHITE = color.rgb(255, 255, 255)
-BLACK = color.rgb(0, 0, 0)
-GRAY_1 = color.rgb(0, 0, 1 << 6)
-GRAY_2 = color.rgb(0, 0, 2 << 6)
 background = brush.pattern(WHITE, GRAY_1, 12)
 
 screen.antialias = image.X4

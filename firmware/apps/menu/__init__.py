@@ -85,9 +85,9 @@ def update():
     if Icon.active_icon:
         label = f"{Icon.active_icon.name}"
         w, _ = screen.measure_text(label)
-        screen.pen = color.rgb(0, 0, 0)
+        screen.pen = color.black
         screen.shape(shape.rectangle((screen.width / 2) - (w / 2) - 4, screen.height - 15, w + 8, 15))
-        screen.pen = color.rgb(255, 255, 255)
+        screen.pen = color.white
         screen.text(label, (screen.width / 2) - (w / 2), screen.height - 15)
 
     return None

@@ -18,11 +18,6 @@ display = ssd1680.SSD1680()
 
 SLEEP_TIMEOUT_MS = 5000
 
-BAYER_MATRIX = bytearray((0, 136, 34, 170,
-                          204, 68, 238, 102,
-                          51, 187, 17, 153,
-                          255, 119, 221, 85))
-
 _CASE_LIGHTS = [machine.PWM(machine.Pin.board.CL0), machine.PWM(machine.Pin.board.CL1),
                 machine.PWM(machine.Pin.board.CL2), machine.PWM(machine.Pin.board.CL3)]
 
@@ -374,7 +369,11 @@ def mode(mode, force=False):
 
 # The dither function
 @micropython.viper
-def ordered_dither(dest: ptr8, matrix: ptr8, palette: ptr8):
+def ordered_dither(dest: ptr8):
+    matrix = ptr8(bytearray((0, 136, 34, 170, 204, 68, 238, 102, 51, 187, 17, 153, 255, 119, 221, 85)))
+    candidates_a = ptr8(bytearray((64, 191, 191, 255)))
+    candidates_b = ptr8(bytearray((0, 64, 64, 191)))
+
     for y in range(0, 176):
         y_lookup = (y & 0b11) << 2
         for x in range(0, 264):
@@ -388,10 +387,10 @@ def ordered_dither(dest: ptr8, matrix: ptr8, palette: ptr8):
 
             scale = matrix[y_lookup | (x & 0b11)]
 
-            a = palette[pixel << 1]
-            b = palette[(pixel << 1) + 1]
+            a = candidates_a[pixel >> 6]
+            b = candidates_b[pixel >> 6]
 
-            dest[offset] = dest[offset + 1] = dest[offset + 2] = a if pixel > b + ((a - b) * scale >> 8) else b
+            dest[offset] = dest[offset + 1] = dest[offset + 2] = a if pixel > (b + ((a - b) * scale >> 8)) else b
 
 
 def run(update, init=None, on_exit=None, auto_clear=True):
@@ -411,22 +410,9 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                     return result
                 gc.collect()
 
-                CANDIDATES = bytearray(256 * 2)
-
-                for c in range(256):
-                    palette = (0, 64, 192, 255)
-                    a = palette[-1]
-                    b = palette[-2]
-                    for i in range(1, 4):
-                        if (c < palette[i]):
-                            a = palette[i]
-                            b = palette[i - 1]
-                            break
-
-                CANDIDATES[c * 2:c * 2 + 2] = bytearray((a, b))
-
                 # Perform the dither on the screen raw buffer
-                # ordered_dither(memoryview(screen.raw), BAYER_MATRIX, CANDIDATES)
+                if _current_mode & DITHER:
+                    ordered_dither(memoryview(screen.raw), BAYER_MATRIX, DITHER_CANDIDATES)
 
                 display.update()
 
@@ -465,7 +451,7 @@ def message(title, text, window=None):
         0, 0, error_window.width, error_window.height, 5, 5, 5, 5
     )
     heading = shape.rounded_rectangle(0, 0, error_window.width, 12, 5, 5, 0, 0)
-    error_window.pen = color.rgb(255, 255, 255)
+    error_window.pen = color.white
     error_window.shape(background)
 
     error_window.pen = color.rgb(100, 100, 100)
@@ -548,8 +534,8 @@ ASSETS = "/system/assets"
 DEFAULT_FONT = rom_font.sins
 ERROR_FONT = rom_font.desert
 
-FG = color.rgb(255, 255, 255)
-BG = color.rgb(20, 40, 60)
+FG = color.black
+BG = color.white
 
 VBAT_SENSE = machine.ADC(machine.Pin.board.VBAT_SENSE)
 VBUS_DETECT = machine.Pin.board.VBUS_DETECT
@@ -564,6 +550,7 @@ LORES = 0
 FAST_UPDATE = 3 << 4
 FULL_UPDATE = 0 << 4
 MEDIUM_UPDATE = 2 << 4
+DITHER = 1 << 8
 
 conversion_factor = 3.3 / 65536
 
@@ -578,7 +565,7 @@ picovector.default_target = screen
 
 # Build in some badgeware helpers, so we don't have to "bw.lores" etc
 # note HIRES and LORES and mode are currently unused for Blinky
-for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "SpriteSheet", "load_font", "rom_font"):
+for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "DITHER", "SpriteSheet", "load_font", "rom_font"):
     setattr(builtins, k, locals()[k])
 
 

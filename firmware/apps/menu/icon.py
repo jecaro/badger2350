@@ -1,9 +1,9 @@
 # icon colours
-bold = color.rgb(0, 0, 0 << 6)
-faded = color.rgb(0, 0, 3 << 6)
+bold = color.black
+faded = color.light_grey
 
 # icon shape
-shade_brush = color.rgb(0, 0, 1 << 6)
+shade_brush = color.dark_grey
 
 
 class Icon:

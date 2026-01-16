@@ -2,8 +2,7 @@
 
 from badgeware import display
 
-black = color.rgb(0, 0, 0)
-white = color.rgb(235, 245, 255)
+
 small_font = pixel_font.load("/system/assets/fonts/awesome.ppf")
 large_font = pixel_font.load("/system/assets/fonts/ignore.ppf")
 
@@ -50,10 +49,10 @@ def user_message(header, lines):
     if not isinstance(lines, list):
         raise TypeError("lines must be provided in a list.")
 
-    screen.pen = brush.pattern(color.rgb(0, 0, 0), color.rgb(20, 20, 20), 20)
+    screen.pen = brush.pattern(color.black, color.rgb(20, 20, 20), 20)
     screen.clear()
     screen.font = large_font
-    screen.pen = white
+    screen.pen = color.white
     center_text(header, 5)
 
     screen.font = small_font
@@ -73,10 +72,10 @@ def bullet_list(header, bullet_points):
     if not isinstance(bullet_points, list):
         raise TypeError("bullet points must be provided in a list.")
 
-    screen.pen = brush.pattern(color.rgb(0, 0, 0), color.rgb(20, 20, 20), 20)
+    screen.pen = brush.pattern(color.black, color.rgb(20, 20, 20), 20)
     screen.clear()
     screen.font = large_font
-    screen.pen = white
+    screen.pen = color.white
     center_text(header, 5)
 
     ty = 40
