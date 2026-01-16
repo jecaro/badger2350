@@ -18,6 +18,11 @@ display = ssd1680.SSD1680()
 
 SLEEP_TIMEOUT_MS = 5000
 
+BAYER_MATRIX = bytearray((0, 136, 34, 170,
+                          204, 68, 238, 102,
+                          51, 187, 17, 153,
+                          255, 119, 221, 85))
+
 _CASE_LIGHTS = [machine.PWM(machine.Pin.board.CL0), machine.PWM(machine.Pin.board.CL1),
                 machine.PWM(machine.Pin.board.CL2), machine.PWM(machine.Pin.board.CL3)]
 
@@ -367,6 +372,28 @@ def mode(mode, force=False):
     return True
 
 
+# The dither function
+@micropython.viper
+def ordered_dither(dest: ptr8, matrix: ptr8, palette: ptr8):
+    for y in range(0, 176):
+        y_lookup = (y & 0b11) << 2
+        for x in range(0, 264):
+            offset = ((y * 264) + x) << 2
+
+            # Approximate luminance
+            # pixel = ((dest[offset] * 54) + (dest[offset + 1] * 183) + (dest[offset + 2] * 18)) >> 8
+
+            # Fast green bias
+            pixel = (dest[offset] + (dest[offset + 1] * 2) + dest[offset + 2]) >> 2
+
+            scale = matrix[y_lookup | (x & 0b11)]
+
+            a = palette[pixel << 1]
+            b = palette[(pixel << 1) + 1]
+
+            dest[offset] = dest[offset + 1] = dest[offset + 2] = a if pixel > b + ((a - b) * scale >> 8) else b
+
+
 def run(update, init=None, on_exit=None, auto_clear=True):
     screen.font = DEFAULT_FONT
     screen.clear(BG)
@@ -383,7 +410,26 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                 if (result := update()) is not None:
                     return result
                 gc.collect()
+
+                CANDIDATES = bytearray(256 * 2)
+
+                for c in range(256):
+                    palette = (0, 64, 192, 255)
+                    a = palette[-1]
+                    b = palette[-2]
+                    for i in range(1, 4):
+                        if (c < palette[i]):
+                            a = palette[i]
+                            b = palette[i - 1]
+                            break
+
+                CANDIDATES[c * 2:c * 2 + 2] = bytearray((a, b))
+
+                # Perform the dither on the screen raw buffer
+                # ordered_dither(memoryview(screen.raw), BAYER_MATRIX, CANDIDATES)
+
                 display.update()
+
                 # Wait for input or sleep
                 t_start = time.ticks_ms()
                 while True:
