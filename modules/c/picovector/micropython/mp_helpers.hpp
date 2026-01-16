@@ -47,6 +47,9 @@ extern "C" {
 // "new" / class constructor
 #define MPY_BIND_NEW(fn_name, fn_body) static mp_obj_t fn_name##_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) fn_body
 
+// "print" / print helper
+#define MPY_BIND_PRINT(fn_name, fn_body) static void fn_name##_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) fn_body
+
 #define MPY_BIND_DEL(fn_name, fn_body) static mp_obj_t fn_name##__del__(mp_obj_t self_in) fn_body\
   static MP_DEFINE_CONST_FUN_OBJ_1(fn_name##__del___obj, fn_name##__del__);
 
