@@ -501,7 +501,7 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                 on_exit()
 
     except Exception as e:  # noqa: BLE001
-        fatel_error("Error!", get_exception(e))
+        fatal_error("Error!", get_exception(e))
 
 
 def get_exception(e):
