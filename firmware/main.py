@@ -1,16 +1,18 @@
 # This file is copied from /system/main.py to /main.py on first run
 
-import sys
 import os
-from badgeware import run, fatal_error
-import machine
-import gc
+import sys
 
-running_app = None
+import machine
+from badgeware import State, fatal_error, run
 
 
 def quit_to_launcher(pin):
     global running_app
+
+    state["running"] = "/system/apps/menu"
+    State.modify("menu", state)
+
     getattr(running_app, "on_exit", lambda: None)()
     # If we reset while boot is low, bad times
     while not pin.value():
@@ -18,45 +20,28 @@ def quit_to_launcher(pin):
     machine.reset()
 
 
-standard_modules = [k for k in sys.modules.keys()]
+state = {
+    "active": 0,
+    "running": "/system/apps/menu"
+}
+State.load("menu", state)
 
+running_app = state["running"]
+
+machine.Pin.board.BUTTON_HOME.irq(
+    trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
+)
+
+app = running_app
+
+sys.path.insert(0, app)
 try:
-    menu = __import__("/system/apps/menu")
+    os.chdir(app)
+    running_app = __import__(app)
+    getattr(running_app, "init", lambda: None)()
 except Exception as e:  # noqa: BLE001
     fatal_error("Error!", e)
 
-app = run(menu.update)
+run(running_app.update)
 
-if sys.path[0].startswith("/system/apps"):
-    sys.path.pop(0)
-
-del menu
-
-# make any module names imported by menu are freed for apps
-for key, module in sys.modules.items():
-    if key not in standard_modules:
-        del sys.modules[key]
-
-gc.collect()
-
-# Stopping in Thonny can cause run(menu.update) to return None
-if app is not None:
-    # Don't pass the b press into the app
-    while io.held:
-        io.poll()
-
-    machine.Pin.board.BUTTON_HOME.irq(
-        trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
-    )
-
-    sys.path.insert(0, app)
-    try:
-        os.chdir(app)
-        running_app = __import__(app)
-        getattr(running_app, "init", lambda: None)()
-    except Exception as e:  # noqa: BLE001
-        fatal_error("Error!", e)
-
-    run(running_app.update)
-
-    machine.reset()
+machine.reset()
