@@ -19,7 +19,7 @@ background = brush.pattern(color.white, color.dark_grey, 12)
 
 screen.antialias = image.X4
 
-large_font = pixel_font.load("/system/assets/fonts/ignore.ppf")
+large_font = rom_font.ignore
 
 graph_max = math.degrees(math.pi * 2)
 

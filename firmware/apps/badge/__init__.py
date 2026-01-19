@@ -35,8 +35,8 @@ rear_view = True
 card_pos = (10, 10)
 pattern = 25
 
-small_font = pixel_font.load("/system/assets/fonts/smart.ppf")
-large_font = pixel_font.load("/system/assets/fonts/ignore.ppf")
+small_font = rom_font.smart
+large_font = rom_font.ignore
 
 
 def center_text(text, y):

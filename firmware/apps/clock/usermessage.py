@@ -3,8 +3,8 @@
 from badgeware import display
 
 
-small_font = pixel_font.load("/system/assets/fonts/awesome.ppf")
-large_font = pixel_font.load("/system/assets/fonts/ignore.ppf")
+small_font = rom_font.awesome
+large_font = rom_font.ignore
 
 
 def center_text(text, y):
