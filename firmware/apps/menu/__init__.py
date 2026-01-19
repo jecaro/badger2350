@@ -1,48 +1,20 @@
-
-import sys
 import os
+import sys
 
 sys.path.insert(0, "/system/apps/menu")
+sys.path.insert(0, "/")
 os.chdir("/system/apps/menu")
 
-import math
-from badgeware import State, is_dir, file_exists, run
-from icon import Icon
 import ui
+from badgeware import run, State
 
-# fast screen refresh for the menu
-mode(FAST_UPDATE)
+from app import Apps
 
-# define the list of installed apps
-#
-# - hack them!
-# - replace them with your own
-# - reorder them
-apps = [
-    ("hydrate", "hydrate"),
-    ("badge", "badge"),
-    ("clock", "clock"),
-    ("clock", "clock"),
-    ("gallery", "gallery"),
-    ("badge", "badge"),
-]
+screen.font = rom_font.nope
 
-screen.font = rom_font.ark
-# screen.antialias = image.X2
 
-# find installed apps and create icons
-icons = []
-for app in apps:
-    name, path = app[0], app[1]
-
-    if is_dir(f"/system/apps/{path}"):
-        if file_exists(f"/system/apps/{path}/icon.png"):
-            x = len(icons) % 3
-            y = math.floor(len(icons) / 3)
-            pos = (x * 88 + 43, y * 84 + 54)
-            sprite = image.load(f"/system/apps/{path}/icon.png")
-            icons.append(Icon(pos, name, len(icons), sprite))
-
+# find installed apps and create apps
+apps = Apps("/system/apps")
 
 state = {
     "active": 0,
@@ -52,43 +24,42 @@ State.load("menu", state)
 
 
 def update():
-    global state, icons, alpha
+    global active, apps
 
-    # process button inputs to switch between icons
+    # process button inputs to switch between apps
     if io.BUTTON_C in io.pressed:
-        state["active"] += 1
+        if (state["active"] % 3) < 2 and state["active"] < len(apps):
+            state["active"] += 1
     if io.BUTTON_A in io.pressed:
-        state["active"] -= 1
-    if io.BUTTON_UP in io.pressed:
+        if (state["active"] % 3) > 0 and state["active"] > 0:
+            state["active"] -= 1
+    if io.BUTTON_UP in io.pressed and state["active"] >= 3:
         state["active"] -= 3
     if io.BUTTON_DOWN in io.pressed:
         state["active"] += 3
-    if io.BUTTON_B in io.pressed:
-        state["running"] = f"/system/apps/{apps[state["active"]][1]}"
-        State.modify("menu", state)
-        return state["running"]
+        if state["active"] >= len(apps):
+            state["active"] = len(apps) - 1
 
-    if icons:
-        state["active"] %= len(icons)
+    apps.activate(state["active"])
 
     State.modify("menu", state)
+
+    if io.BUTTON_B in io.pressed:
+        state["running"] = f"/system/apps/{apps.active.path}"
+        State.modify("menu", state)
+        return state["running"]
 
     ui.draw_background()
     ui.draw_header()
 
-    # draw menu icons
-    for i in range(len(icons)):
-        icons[i].activate(state["active"] == i)
-        icons[i].draw()
+    # draw menu apps
+    apps.draw_icons()
 
     # draw label for active menu icon
-    if Icon.active_icon:
-        label = f"{Icon.active_icon.name}"
-        w, _ = screen.measure_text(label)
-        screen.pen = color.black
-        screen.shape(shape.rectangle((screen.width / 2) - (w / 2) - 4, screen.height - 15, w + 8, 15))
-        screen.pen = color.white
-        screen.text(label, (screen.width / 2) - (w / 2), screen.height - 15)
+    apps.draw_label()
+
+    # draw hints for the active page
+    apps.draw_pagination()
 
     return None
 
