@@ -1,15 +1,10 @@
-from badgeware import run
 import rp2
+from badgeware import run
 
 rp2.enable_msc()
 
-
-try:
-    small_font = rom_font.ark
-    large_font = rom_font.absolute
-except OSError:
-    small_font = None
-    large_font = None
+small_font = rom_font.winds
+large_font = rom_font.nope
 
 
 class DiskMode():
@@ -17,46 +12,50 @@ class DiskMode():
         self.transferring = False
 
     def draw(self):
-        screen.pen = color.white
+        screen.pen = brush.pattern(color.white, color.dark_grey, 23)
         screen.clear()
 
-        if large_font:
-            screen.font = large_font
-            screen.pen = color.dark_grey
-            center_text("USB Disk Mode", 5)
+        # draw the main window
+        window = (10, 10, screen.width - 20, screen.height - 20)
+        offset = 2
 
-            screen.text("1:", 10, 25)
-            screen.text("2:", 10, 45)
-            screen.text("3:", 10, 65)
+        screen.pen = color.dark_grey
+        screen.shape(shape.rectangle(window[0] + offset, window[1] + offset,
+                                     window[2] + offset, window[3] + offset))
+        screen.pen = color.white
+        screen.shape(shape.rectangle(*window))
+        screen.pen = color.black
+        screen.shape(shape.rectangle(*window).stroke(2))
 
-            screen.pen = color.dark_grey
-            screen.font = small_font
-            wrap_text("""Your badge is now mounted as a disk""", 30, 28)
+        screen.pen = color.black
+        screen.shape(shape.rectangle(window[0], window[1], window[2], 30).stroke(1))
 
-            wrap_text("""Copy code onto it to experiment!""", 30, 48)
+        # draw the accent lines in the title bar of the window
+        x, y, w, h = window
+        y += 6
+        for i in range(5):
+            y += 3
+            screen.line(vec2(x, y), vec2(w + 10, y))
 
-            wrap_text("""Eject the disk to reboot your badge""", 30, 68)
+        screen.font = large_font
+        title = "USB Disk Mode"
+        tw, _ = screen.measure_text(title)
 
-            screen.font = small_font
-            if self.transferring:
-                screen.pen = color.dark_grey
-                center_text("Transferring data!", 102)
-            else:
-                screen.pen = color.light_grey
-                center_text("Waiting for data", 102)
+        title_pos = vec2((window[0] + window[2] // 2) - (tw // 2), window[1] + 9)
+        screen.pen = color.white
+        screen.rectangle(title_pos.x - 5, window[1] + 2, tw + 10, 26)
+        screen.pen = color.black
+        screen.text(title, title_pos.x, title_pos.y)
+
+        screen.pen = color.dark_grey
+        text_draw(screen, "1: Your badge is now mounted as a disk", rect(30, 45, 210, 100))
+        text_draw(screen, "2: Copy code onto it to experiment!", rect(30, 85, 210, 100))
+        text_draw(screen, "3: Eject the disk to reboot your badge", rect(30, 125, 210, 100))
 
 
 def center_text(text, y):
     w, h = screen.measure_text(text)
     screen.text(text, 80 - (w / 2), y)
-
-
-def wrap_text(text, x, y):
-    lines = text.splitlines()
-    for line in lines:
-        _, h = screen.measure_text(line)
-        screen.text(line, x, y)
-        y += h * 0.8
 
 
 disk_mode = DiskMode()
