@@ -513,42 +513,50 @@ def get_exception(e):
 
 
 def message(title, msg, window=None):
-    error_window = window or screen.window(5, 5, screen.width - 10, screen.height - 10)
+    error_window = window or screen.window(0, 0, screen.width, screen.height)
     error_window.font = DEFAULT_FONT
 
-    # Draw a light grey background
-    background = shape.rounded_rectangle(
-        0, 0, error_window.width, error_window.height, 5, 5, 5, 5
-    )
-    heading = shape.rounded_rectangle(0, 0, error_window.width, 12, 5, 5, 0, 0)
-    error_window.pen = color.rgb(100, 100, 100, 240)
-    error_window.shape(background)
+    error_window.pen = brush.pattern(color.white, color.dark_grey, 23)
+    error_window.clear()
 
-    error_window.pen = color.rgb(255, 100, 100, 240)
-    error_window.shape(heading)
+    # draw the main window
+    window = rect(10, 10, error_window.width - 20, error_window.height - 20)
+    offset = 2
 
-    error_window.pen = color.rgb(50, 100, 50)
-    tw = 35
-    error_window.shape(
-        shape.rounded_rectangle(
-            error_window.width - tw - 36, error_window.height - 12, tw, 12, 3, 3, 0, 0
-        )
-    )
+    error_window.pen = color.dark_grey
+    error_window.shape(shape.rectangle(window.x + offset, window.y + offset,
+                                       window.w + offset, window.h + offset))
+    error_window.pen = color.white
+    error_window.shape(shape.rectangle(window.x, window.y, window.w, window.h))
+    error_window.pen = color.black
+    error_window.shape(shape.rectangle(window.x, window.y, window.w, window.h).stroke(2))
 
-    error_window.pen = color.rgb(255, 200, 200)
-    error_window.text(
-        "Okay", error_window.width - tw + 5 - 36, error_window.height - 12
-    )
-    y = 0
-    error_window.text(title, 5, y)
-    y += 17
+    error_window.pen = color.black
+    error_window.shape(shape.rectangle(window.x, window.y, window.w, 30).stroke(1))
 
-    error_window.pen = color.rgb(200, 200, 200)
+    # draw the accent lines in the title bar of the window
+    lines_y = window.y
+    lines_y += 6
+    for i in range(5):
+        lines_y += 3
+        error_window.line(vec2(window.x, lines_y), vec2(window.w + 10, lines_y))
+
+    error_window.font = rom_font.nope
+    tw, _ = error_window.measure_text(title)
+
+    title_pos = vec2((window.x + window.w // 2) - (tw // 2), window.y + 9)
+    error_window.pen = color.white
+    error_window.rectangle(title_pos.x - 5, window.y + 2, tw + 10, 26)
+    error_window.pen = color.black
+    error_window.text(title, title_pos.x, title_pos.y)
+
+    error_window.pen = color.black
+    error_window.font = rom_font.winds
     bounds = error_window.clip
-    bounds.y += 12
-    bounds.h -= 32
-    bounds.x += 5
-    bounds.w -= 10
+    bounds.y += 43
+    bounds.x += 18
+    bounds.w -= 21
+    bounds.h -= 35
 
     text_draw(error_window, msg, bounds=bounds)
 
