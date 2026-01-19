@@ -15,7 +15,7 @@ state = {
     "goal": 2000
 }
 
-background = brush.pattern(WHITE, GRAY_1, 12)
+background = brush.pattern(color.white, color.dark_grey, 12)
 
 screen.antialias = image.X4
 
@@ -30,7 +30,7 @@ def goal_met():
 
 def draw_graph(x, y, r, value):
 
-    screen.pen = WHITE
+    screen.pen = color.white
     screen.shape(shape.circle(x, y, r + 10))
 
     v = clamp(value, 0, state["goal"])
@@ -42,21 +42,21 @@ def draw_graph(x, y, r, value):
     pie = shape.pie(0, 0, r, 0, v)
     pie.transform = mat3().translate(x, y)
 
-    screen.pen = GRAY_1 if not goal_met() else WHITE
+    screen.pen = color.dark_grey if not goal_met() else color.white
     screen.shape(shape.circle(x, y, r))
 
-    screen.pen = WHITE
+    screen.pen = color.white
     screen.shape(pie)
-    screen.pen = WHITE
+    screen.pen = color.white
     screen.shape(shape.circle(x, y, r - 8))
 
-    screen.pen = GRAY_1
+    screen.pen = color.dark_grey
     screen.shape(shape.circle(x, y, r - 8).stroke(2))
     screen.shape(shape.circle(x, y, r).stroke(2))
 
     # if the graph is big enough, put the text in the centre.
     if r > 30:
-        screen.pen = BLACK
+        screen.pen = color.black
         text = f"{state["current"]}ml"
         tw = screen.measure_text(text)[0]
         tx = x - tw / 2
@@ -82,15 +82,15 @@ def draw_menu():
 
         mode(FAST_UPDATE)
 
-        screen.pen = WHITE
+        screen.pen = background
         screen.clear()
 
         # draw the menu background
-        screen.pen = BLACK
+        screen.pen = color.black
         screen.shape(shape.rounded_rectangle(x, y, w, h, 3, 3, 0, 0))
 
         # Show the menu elements if the menu is showing including during transition
-        screen.pen = WHITE
+        screen.pen = color.white
         t = f"{menu_value}ml"
         tx = CX - screen.measure_text(str(t))[0] / 2
         screen.text(t, tx, y + 52)
@@ -101,9 +101,9 @@ def draw_menu():
         # gold star for meeting your daily goal! :)
         sx, sy = CX, y + 23
         if goal_met():
-            screen.pen = WHITE
+            screen.pen = color.white
             screen.shape(shape.star(sx, sy, 5, 9, 13))
-        screen.pen = WHITE
+        screen.pen = color.white
         screen.shape(shape.star(sx, sy, 5, 9, 13).stroke(2))
     else:
         screen.text("^", CX - 3, screen.height - 18)

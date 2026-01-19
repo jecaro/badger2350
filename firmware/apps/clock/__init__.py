@@ -285,18 +285,18 @@ def draw_sevenseg_clock(currenttime):
     seconds_y_start = 0
     seconds_xy_offset = digit_y - 8
     screen.shape(shape.custom([
-        point(seconds_x_start, seconds_y_start),
-        point(screen.width, seconds_y_start),
-        point(screen.width, seconds_xy_offset),
-        point(seconds_x_start + seconds_xy_offset - seconds_y_start, seconds_xy_offset)
+        vec2(seconds_x_start, seconds_y_start),
+        vec2(screen.width, seconds_y_start),
+        vec2(screen.width, seconds_xy_offset),
+        vec2(seconds_x_start + seconds_xy_offset - seconds_y_start, seconds_xy_offset)
     ]))
 
     # Draws the stripes increasing in thiccness until it gets to half way down the screen.
     while y <= screen.height / 2:
-        seg_path = [point(leftx, y),
-                    point(rightx, y),
-                    point(rightx + offset, y + offset),
-                    point(leftx + offset, y + offset)]
+        seg_path = [vec2(leftx, y),
+                    vec2(rightx, y),
+                    vec2(rightx + offset, y + offset),
+                    vec2(leftx + offset, y + offset)]
         seg = shape.custom(seg_path)
         screen.shape(seg)
         offset += 1
@@ -311,15 +311,15 @@ def draw_sevenseg_clock(currenttime):
     # Then the lower left filled area...
     seconds_x_start = leftx - seconds_spacing
     screen.shape(shape.custom([
-        point(seconds_x_start, screen.height - seconds_y_start),
-        point(0, screen.height - seconds_y_start),
-        point(0, screen.height - seconds_xy_offset),
-        point(seconds_x_start - seconds_xy_offset + seconds_y_start, screen.height - seconds_xy_offset)]))
+        vec2(seconds_x_start, screen.height - seconds_y_start),
+        vec2(0, screen.height - seconds_y_start),
+        vec2(0, screen.height - seconds_xy_offset),
+        vec2(seconds_x_start - seconds_xy_offset + seconds_y_start, screen.height - seconds_xy_offset)]))
 
     # Just like above, draws stripes increasing in thiccness from the bottom of the screen.
     offset = 0
     while y >= 60:
-        seg_path = [point(leftx, y), point(rightx, y), point(rightx - offset, y - offset), point(leftx - offset, y - offset)]
+        seg_path = [vec2(leftx, y), vec2(rightx, y), vec2(rightx - offset, y - offset), vec2(leftx - offset, y - offset)]
         seg = shape.custom(seg_path)
         screen.shape(seg)
         offset += 1
@@ -332,7 +332,7 @@ def draw_sevenseg_clock(currenttime):
     screen.shape(shape.rectangle(0, digit_y - seconds_spacing, screen.width, digit_h + (2 * seconds_spacing)))
 
     # Draw the dots in between the numerals.
-    screen.blit(clock_dots, point((screen.width / 2) - (clock_dots.width / 2), digit_y))
+    screen.blit(clock_dots, vec2((screen.width / 2) - (clock_dots.width / 2), digit_y))
 
     # Then finally draw the digit sprites.
     hour = currenttime[3]
@@ -352,7 +352,7 @@ def draw_scribble_clock(currenttime):
         this_drawing_brush = bg_brush
 
     # First draw the background
-    screen.blit(background, point(0, 0))
+    screen.blit(background, vec2(0, 0))
 
     # Then make up a string for the date and draw it.
     year = currenttime[0]
@@ -381,7 +381,7 @@ def draw_scribble_clock(currenttime):
     digit_y = math.floor((screen.height - digit_h) / 2)
 
     draw_digits(hour, minute, numerals, 0, digit_y)
-    screen.blit(clock_dots, point((screen.width / 2) - (clock_dots.width / 2), digit_y + 10))
+    screen.blit(clock_dots, vec2((screen.width / 2) - (clock_dots.width / 2), digit_y + 10))
 
 
 def draw_digits(hour, minute, spritesheet, center_offset, y_pos):
@@ -395,10 +395,10 @@ def draw_digits(hour, minute, spritesheet, center_offset, y_pos):
     minuteunits = minute % 10
 
     # ...and then use that to pick a sprite from the spritesheet of numerals.
-    screen.blit(spritesheet.sprite(hourtens, 0), point(0 - center_offset, y_pos))
-    screen.blit(spritesheet.sprite(hourunits, 0), point(66 - center_offset, y_pos))
-    screen.blit(spritesheet.sprite(minutetens, 0), point(132 + center_offset, y_pos))
-    screen.blit(spritesheet.sprite(minuteunits, 0), point(198 + center_offset, y_pos))
+    screen.blit(spritesheet.sprite(hourtens, 0), vec2(0 - center_offset, y_pos))
+    screen.blit(spritesheet.sprite(hourunits, 0), vec2(66 - center_offset, y_pos))
+    screen.blit(spritesheet.sprite(minutetens, 0), vec2(132 + center_offset, y_pos))
+    screen.blit(spritesheet.sprite(minuteunits, 0), vec2(198 + center_offset, y_pos))
 
 
 # This method draws a row of circles across a given width, sizing them so they fill the
@@ -439,7 +439,7 @@ def draw_dot_row(y, width, total, filled, space_size, space_every):
             dot_x += space_size
 
     x_pos = ((screen.width - total_width) / 2)
-    screen.blit(dot_row, point(x_pos, y))
+    screen.blit(dot_row, vec2(x_pos, y))
 
     # We return the height of the row so we can add it to y for the next row.
     return dot_radius * 2
@@ -646,10 +646,10 @@ def intro_screen():
     screen.font = textclock_font
     center_text("Welcome to Clock!", 3)
 
-    screen.blit(icons.sprite(0, 0), point(35, 144))
-    screen.blit(icons.sprite(1, 0), point(116, 144))
-    screen.blit(icons.sprite(2, 0), point(200, 144))
-    screen.blit(icons.sprite(3, 0), point(232, 30))
+    screen.blit(icons.sprite(0, 0), vec2(35, 144))
+    screen.blit(icons.sprite(1, 0), vec2(116, 144))
+    screen.blit(icons.sprite(2, 0), vec2(200, 144))
+    screen.blit(icons.sprite(3, 0), vec2(232, 30))
 
     screen.font = scribble_font
     center_text("Press any button", 40)

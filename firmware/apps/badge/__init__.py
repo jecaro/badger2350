@@ -92,7 +92,7 @@ def update():
     screen.pen = color.black
     if not rear_view:
         screen.font = large_font
-        screen.blit(id_photo, point(CX - id_photo.width / 2, y + 15))
+        screen.blit(id_photo, vec2(CX - id_photo.width / 2, y + 15))
         center_text(id_name, photo_y)
         screen.font = small_font
         center_text(id_role, photo_y + 31)
@@ -100,7 +100,7 @@ def update():
         screen.pen = color.black
         screen.font = small_font
         for account in id_socials.items():
-            screen.blit(account[1]["icon"], point(30, socials_y))
+            screen.blit(account[1]["icon"], vec2(30, socials_y))
             screen.text(account[1]["handle"], 55, socials_y)
             socials_y += 31
 
