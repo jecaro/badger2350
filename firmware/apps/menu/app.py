@@ -37,7 +37,7 @@ class App:
         screen.shape(icon_rect)
 
         icon_rect.transform = mat3().translate(self.pos.x - 32, self.pos.y - 32)
-        screen.pen = color.white
+        screen.pen = color.light_grey
         screen.shape(icon_rect)
 
         if self.active:
