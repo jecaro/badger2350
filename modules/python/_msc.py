@@ -16,34 +16,34 @@ class DiskMode():
         screen.clear()
 
         # draw the main window
-        window = (10, 10, screen.width - 20, screen.height - 20)
+        window = rect(10, 10, screen.width - 20, screen.height - 20)
         offset = 2
 
         screen.pen = color.dark_grey
-        screen.shape(shape.rectangle(window[0] + offset, window[1] + offset,
-                                     window[2] + offset, window[3] + offset))
+        screen.shape(shape.rectangle(window.x + offset, window.y + offset,
+                                     window.w + offset, window.h + offset))
         screen.pen = color.white
-        screen.shape(shape.rectangle(*window))
+        screen.shape(shape.rectangle(window.x, window.y, window.w, window.h))
         screen.pen = color.black
-        screen.shape(shape.rectangle(*window).stroke(2))
+        screen.shape(shape.rectangle(window.x, window.y, window.w, window.h).stroke(2))
 
         screen.pen = color.black
-        screen.shape(shape.rectangle(window[0], window[1], window[2], 30).stroke(1))
+        screen.shape(shape.rectangle(window.x, window.y, window.w, 30).stroke(1))
 
         # draw the accent lines in the title bar of the window
-        x, y, w, h = window
-        y += 6
+        lines_y = window.y
+        lines_y += 6
         for i in range(5):
-            y += 3
-            screen.line(vec2(x, y), vec2(w + 10, y))
+            lines_y += 3
+            screen.line(vec2(window.x, lines_y), vec2(window.w + 10, lines_y))
 
         screen.font = large_font
         title = "USB Disk Mode"
         tw, _ = screen.measure_text(title)
 
-        title_pos = vec2((window[0] + window[2] // 2) - (tw // 2), window[1] + 9)
+        title_pos = vec2((window.x + window.w // 2) - (tw // 2), window.y + 9)
         screen.pen = color.white
-        screen.rectangle(title_pos.x - 5, window[1] + 2, tw + 10, 26)
+        screen.rectangle(title_pos.x - 5, window.y + 2, tw + 10, 26)
         screen.pen = color.black
         screen.text(title, title_pos.x, title_pos.y)
 
