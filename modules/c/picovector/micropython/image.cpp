@@ -432,7 +432,7 @@ MPY_BIND_ATTR(image, {
       case MP_QSTR_pen: {
         if(action == GET) {
           if(self->brush) {
-            dest[0] = MP_OBJ_FROM_PTR(self->brush);
+            dest[0] = self->brush;
           }else{
             dest[0] = mp_const_none;
           }
@@ -440,12 +440,12 @@ MPY_BIND_ATTR(image, {
         }
 
         if(action == SET) {
-          brush_obj_t *brush = mp_obj_to_brush(self->image, 1, &dest[1]);
+          brush_obj_t *brush = mp_obj_to_brush(1, &dest[1]);
           if(!brush){
             mp_raise_TypeError(MP_ERROR_TEXT("value must be of type brush or color"));
           }
           self->brush = brush;
-          self->image->brush(self->brush->brush);
+          self->image->brush(brush->brush);
 
           dest[0] = MP_OBJ_NULL;
           return;
@@ -490,6 +490,19 @@ MPY_BIND_ATTR(image, {
     dest[1] = MP_OBJ_SENTINEL;
   })
 
+  static void image_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    self(self_in, image_obj_t);
+    mp_printf(print, "image(%d x %d)", int(self->image->bounds().w), int(self->image->bounds().h));
+  }
+
+  static mp_int_t image_get_framebuffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    self(self_in, image_obj_t);
+    bufinfo->buf = self->image->ptr(0, 0);
+    bufinfo->len = self->image->buffer_size();
+    bufinfo->typecode = 'B';
+    return 0;
+  }
+
 MPY_BIND_LOCALS_DICT(image,
       { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&image__del___obj) },
 
@@ -529,7 +542,9 @@ MPY_BIND_LOCALS_DICT(image,
       MP_QSTR_image,
       MP_TYPE_FLAG_NONE,
       make_new, (const void *)image_new,
+      print, (const void *)image_print,
       attr, (const void *)image_attr,
+      buffer, (const void *)image_get_framebuffer,
       locals_dict, &image_locals_dict
   );
 

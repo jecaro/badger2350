@@ -158,6 +158,17 @@ namespace picovector {
       return n;
     }
 
+    rect_t round() {
+      rect_t r;
+      r.x = floorf(this->x);
+      r.y = floorf(this->y);
+      // r.w = floorf(this->w);
+      // r.h = floorf(this->h);
+      r.w = ceilf(this->w + this->x) - r.x;
+      r.h = ceilf(this->h + this->y) - r.y;
+      return r;
+    }
+
     rect_t intersection(const rect_t &r) const {
       rect_t rn = r;
       rn.normalise();

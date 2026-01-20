@@ -587,10 +587,22 @@ def fatal_error(title, error):
 
 
 def load_font(font_file):
-    try:
-        return pixel_font.load(font_file)
-    except OSError:
-        return pixel_font.load(f"/rom/fonts/{font_file}.ppf")
+    search_paths = ("/rom/fonts", "/system/assets/fonts", "/fonts", "/assets", "")
+    file = font_file
+
+    # Remove /rom/fonts if searching for .af files
+    if file.endswith(".af"):
+        search_paths = search_paths[1:]
+
+    extensions = (".af", ".ppf") if not file.endswith(".af") and not file.endswith(".ppf") else ("", )
+
+    for search_path in search_paths:
+        for ext in extensions:
+            path = search_path + f"/{file}{ext}"
+            if file_exists(path) and not is_dir(path):
+                return font.load(path) if path.endswith(".af") else pixel_font.load(path)
+
+    raise OSError(f"Font \"{font_file}\" not found!")
 
 
 class ROMFonts:
@@ -653,13 +665,23 @@ mode(MEDIUM_UPDATE, True)
 setattr(builtins, "screen", image(display.WIDTH, display.HEIGHT, memoryview(display)))
 screen.font = DEFAULT_FONT
 screen.pen = BG
-picovector.default_target = screen
 
 
 # Build in some badgeware helpers, so we don't have to "bw.lores" etc
 # note HIRES and LORES and mode are currently unused for Blinky
 for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "DITHER", "SpriteSheet", "load_font", "rom_font", "text_tokenise", "text_draw"):
     setattr(builtins, k, locals()[k])
+
+
+# Temporary shim to keep "pen()" working
+def _pen(*args):
+    if len(args) in (3, 4):
+        screen.pen = color.rgb(*args)
+    else:
+        screen.pen = args[0]
+
+
+builtins.pen = _pen
 
 
 # Finally, build in badgeware as "bw" for less frequently used things

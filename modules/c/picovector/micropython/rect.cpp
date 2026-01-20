@@ -28,11 +28,6 @@ rect_t mp_obj_get_rect_from_xywh(const mp_obj_t *args) {
 extern "C" {
   #include "py/runtime.h"
 
-  MPY_BIND_PRINT(rect, {
-    rect_obj_t *self = (rect_obj_t *)MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "rect(%d, %d, %d, %d)", self->r.x, self->r.y, self->r.w, self->r.h);
-  })
-
   MPY_BIND_NEW(rect, {
     rect_obj_t *self = mp_obj_malloc_with_finaliser(rect_obj_t, type);
 
@@ -205,7 +200,6 @@ extern "C" {
       MP_QSTR_rect,
       MP_TYPE_FLAG_NONE,
       make_new, (const void *)rect_new,
-      print, (const void *)rect_print,
       attr, (const void *)rect_attr,
       locals_dict, &rect_locals_dict
   );
