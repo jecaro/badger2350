@@ -429,32 +429,6 @@ def mode(mode, force=False):
     return True
 
 
-# The dither function
-@micropython.viper
-def ordered_dither(dest: ptr8):
-    matrix = ptr8(bytearray((0, 136, 34, 170, 204, 68, 238, 102, 51, 187, 17, 153, 255, 119, 221, 85)))
-    candidates_a = ptr8(bytearray((64, 191, 191, 255)))
-    candidates_b = ptr8(bytearray((0, 64, 64, 191)))
-
-    for y in range(0, 176):
-        y_lookup = (y & 0b11) << 2
-        for x in range(0, 264):
-            offset = ((y * 264) + x) << 2
-
-            # Approximate luminance
-            # pixel = ((dest[offset] * 54) + (dest[offset + 1] * 183) + (dest[offset + 2] * 18)) >> 8
-
-            # Fast green bias
-            pixel = (dest[offset] + (dest[offset + 1] * 2) + dest[offset + 2]) >> 2
-
-            scale = matrix[y_lookup | (x & 0b11)]
-
-            a = candidates_a[pixel >> 6]
-            b = candidates_b[pixel >> 6]
-
-            dest[offset] = dest[offset + 1] = dest[offset + 2] = a if pixel > (b + ((a - b) * scale >> 8)) else b
-
-
 def run(update, init=None, on_exit=None, auto_clear=True):
     screen.font = DEFAULT_FONT
     screen.clear(BG)
@@ -476,7 +450,7 @@ def run(update, init=None, on_exit=None, auto_clear=True):
 
                 # Perform the dither on the screen raw buffer
                 if _current_mode & DITHER:
-                    ordered_dither(memoryview(screen.raw), BAYER_MATRIX, DITHER_CANDIDATES)
+                    screen.dither()
 
                 if first_refresh:
                     display.speed(0)
