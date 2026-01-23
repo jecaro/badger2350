@@ -2,7 +2,6 @@ import os
 import rp2
 import vfs
 import machine  # noqa: F401
-import powman
 
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
@@ -34,8 +33,5 @@ except:  # noqa: E722
     fat = vfs.VfsFat(bdev)
     fat.label(FS_LABEL)
     vfs.mount(fat, "/system", readonly=True)
-
-if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
-    import _msc  # noqa: F401
 
 del os, vfs, bdev, bdev_lfs, fat, lfs
