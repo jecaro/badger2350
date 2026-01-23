@@ -101,7 +101,7 @@ mp_obj_t ticks;
   MPY_BIND_ARGS0(poll, {
 #ifdef PICO
     uint8_t buttons = 0;
-  
+
     // Feed the switch states from wakeup into `pressed`
     static bool got_wakeup_switches = false;
     if(!got_wakeup_switches) {

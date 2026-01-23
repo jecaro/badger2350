@@ -2,22 +2,25 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "picovector.config.hpp"
 #include "types.hpp"
+#include "blend.hpp"
 
 using std::vector;
 
 namespace picovector {
 
-  // empty implementations for unsupported modes
-  void pixel_func_nop(image_t *target, brush_t *brush, int x, int y);
-  void span_func_nop(image_t *target, brush_t *brush, int x, int y, int w);
-  void mask_span_func_nop(image_t *target, brush_t *brush, int x, int y, int w, uint8_t *m);
+  class image_t;
+  class brush_t;
 
-  typedef void (*pixel_func_t)(image_t *target, brush_t *brush, int x, int y);
+  // empty implementations for unsupported modes
+  void span_func_nop(image_t *target, brush_t *brush, int x, int y, int w);
+  void masked_span_func_nop(image_t *target, brush_t *brush, int x, int y, int w, uint8_t *mask);
+
   typedef void (*span_func_t)(image_t *target, brush_t *brush, int x, int y, int w);
-  typedef void (*mask_span_func_t)(image_t *target, brush_t *brush, int x, int y, int w, uint8_t *mask);
+  typedef void (*masked_span_func_t)(image_t *target, brush_t *brush, int x, int y, int w, uint8_t *mask);
 
   typedef enum antialias_t {
     OFF   = 0,
@@ -38,30 +41,32 @@ namespace picovector {
   class font_t;
   class pixel_font_t;
   class shape_t;
-  struct brush_t;
+  class brush_t;
 
   class image_t {
-    private:
-      void           *_buffer = nullptr;
-      bool            _managed_buffer = false;
-      size_t          _row_stride;
-      size_t          _bytes_per_pixel;
+    friend class brush_t;
 
-      rect_t          _bounds;
-      rect_t          _clip;
-      uint8_t         _alpha = 255;
-      antialias_t     _antialias = OFF;
-      pixel_format_t  _pixel_format = RGBA8888;
-      bool            _has_palette = false;
-      brush_t        *_brush = nullptr;
-      font_t         *_font = nullptr;
-      pixel_font_t   *_pixel_font = nullptr;
-      palette_t       _palette;
+    private:
+      void              *_buffer = nullptr;
+      bool               _managed_buffer = false;
+      size_t             _row_stride;
+      size_t             _bytes_per_pixel;
+
+      rect_t             _bounds;
+      rect_t             _clip;
+      uint8_t            _alpha = 255;
+      antialias_t        _antialias = OFF;
+      pixel_format_t     _pixel_format = RGBA8888;
+      bool               _has_palette = false;
+      brush_t           *_brush = nullptr;
+      font_t            *_font = nullptr;
+      pixel_font_t      *_pixel_font = nullptr;
+      palette_t          _palette;
 
     public:
-      pixel_func_t    _pixel_func = pixel_func_nop;
-      span_func_t     _span_func = span_func_nop;
-      mask_span_func_t _mask_span_func = mask_span_func_nop;
+      blend_func_t       _blend_func = blend_func_over;
+      span_func_t        _span_func = span_func_nop;
+      masked_span_func_t _masked_span_func = masked_span_func_nop;
 
       image_t();
       image_t(image_t *source, rect_t r);
@@ -109,6 +114,7 @@ namespace picovector {
       uint32_t pixel_unsafe(int x, int y);
       uint32_t pixel(int x, int y);
       void span(int x, int y, int w);
+      void masked_span(int x, int y, int w, uint8_t *mask);
       void clear();
       //void clear(uint32_t c);
       void rectangle(rect_t r);
