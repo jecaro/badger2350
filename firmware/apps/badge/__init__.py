@@ -28,7 +28,7 @@ for key in id_socials.keys():
     id_socials[key]["icon"] = image.load(f"assets/socials/{key}.png")
 
 # id card variables
-id_body = shape.rectangle(0, 0, 240, 155, )
+id_body = shape.rectangle(0, 0, 240, 155 )
 id_outline = shape.rectangle(0, 0, 240, 155).stroke(2)
 background = brush.pattern(color.black, color.white, 6)
 rear_view = True

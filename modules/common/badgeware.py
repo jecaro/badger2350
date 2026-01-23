@@ -205,15 +205,13 @@ def clamp(v, vmin, vmax):
 def rnd(v1, v2=None):
     if v2:
         return random.randint(v1, v2)
-    else:
-        return random.randint(0, v1)
+    return random.randint(0, v1)
 
 
 def frnd(v1, v2=None):
     if v2:
         return random.uniform(v1, v2)
-    else:
-        return random.uniform(0, v1)
+    return random.uniform(0, v1)
 
 
 def file_exists(path):
@@ -590,7 +588,7 @@ def load_font(font_file):
             if file_exists(path) and not is_dir(path):
                 return font.load(path) if path.endswith(".af") else pixel_font.load(path)
 
-    raise OSError(f"Font \"{font_file}\" not found!")
+    raise OSError(f'Font "{font_file}" not found!')
 
 
 class ROMFonts:
@@ -650,7 +648,7 @@ conversion_factor = 3.3 / 65536
 _current_mode = MEDIUM_UPDATE
 mode(MEDIUM_UPDATE, True)
 
-setattr(builtins, "screen", image(display.WIDTH, display.HEIGHT, memoryview(display)))
+builtins.screen = image(display.WIDTH, display.HEIGHT, memoryview(display))
 screen.font = DEFAULT_FONT
 screen.pen = BG
 

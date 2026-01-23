@@ -12,17 +12,17 @@ import utime
 class Policy:
     def __init__(self, hemisphere, week, month, weekday, hour, timezone):
         if hemisphere not in [0, 1]:
-            raise ValueError('hemisphere must be 0..1')
-        if week not in range(0, 5):
-            raise ValueError('week must be 0 or 1..4')
+            raise ValueError("hemisphere must be 0..1")
+        if week not in range(5):
+            raise ValueError("week must be 0 or 1..4")
         if month not in range(1, 13):
-            raise ValueError('month must be 1..12')
-        if weekday not in range(0, 7):
-            raise ValueError('weekday must be 0..6')
-        if hour not in range(0, 24):
-            raise ValueError('hour must be 0..23')
+            raise ValueError("month must be 1..12")
+        if weekday not in range(7):
+            raise ValueError("weekday must be 0..6")
+        if hour not in range(24):
+            raise ValueError("hour must be 0..23")
         if timezone not in range(-780, 781):
-            raise ValueError('timezone must be -780..780')
+            raise ValueError("timezone must be -780..780")
         self.hemisphere = hemisphere
         self.week = week
         self.month = month
@@ -31,28 +31,28 @@ class Policy:
         self.timezone = timezone
 
     def __str__(self):
-        self.days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        self.abbr = ['last', 'first', 'second', 'third', 'fourth']
-        self.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        return ('Daylight Saving Policy: daylight saving {} on the {} {} of {} at {:02}:00 hrs (UTC{})').format(
+        self.days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self.abbr = ["last", "first", "second", "third", "fourth"]
+        self.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        return ("Daylight Saving Policy: daylight saving {} on the {} {} of {} at {:02}:00 hrs (UTC{})").format(
             self.prefix,
             self.abbr[self.week],
             self.days[self.weekday],
             self.months[self.month - 1],
             self.hour,
-            '' if not self.timezone else '{:+1}'.format(self.timezone / 60)
+            "" if not self.timezone else "{:+1}".format(self.timezone / 60)
         )
 
 
 class StandardTimePolicy(Policy):
     def __init__(self, hemisphere, week, month, weekday, hour, timezone):
-        self.prefix = 'ends'
+        self.prefix = "ends"
         super(StandardTimePolicy, self).__init__(hemisphere, week, month, weekday, hour, timezone)
 
 
 class DaylightSavingPolicy(Policy):
     def __init__(self, hemisphere, week, month, weekday, hour, timezone):
-        self.prefix = 'starts'
+        self.prefix = "starts"
         super(DaylightSavingPolicy, self).__init__(hemisphere, week, month, weekday, hour, timezone)
 
 
