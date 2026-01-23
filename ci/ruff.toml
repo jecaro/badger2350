@@ -1,7 +1,9 @@
 builtins = [
     "mode",
-    "HIRES",
-    "LORES",
+    "FAST_UPDATE",
+    "FULL_UPDATE",
+    "MEDIUM_UPDATE",
+    "DITHER",
     "SpriteSheet",
     "load_font",
     "rom_font",
@@ -18,10 +20,12 @@ builtins = [
     "mat3",
     "pen",
     "pixel_font",
-    "point",
+    "vec2",
     "rect",
     "shape",
     "screen",
+    "text_tokenise",
+    "text_draw"
 ]
 
 # Include:
