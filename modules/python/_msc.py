@@ -33,7 +33,7 @@ class DiskMode():
         # draw the accent lines in the title bar of the window
         lines_y = window.y
         lines_y += 6
-        for i in range(5):
+        for _ in range(5):
             lines_y += 3
             screen.line(vec2(window.x, lines_y), vec2(window.w + 10, lines_y))
 

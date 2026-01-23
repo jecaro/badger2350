@@ -79,10 +79,11 @@ def time_from_ntp():
     localtime_to_rtc()
 
 
-def pen_glyph_renderer(image, parameters, cursor, measure):
+def pen_glyph_renderer(_image, parameters, _cursor, measure):
     if measure:
         return 0
     pen(*(int(c) for c in parameters))
+    return None
 
 
 def text_tokenise(image, text, glyph_renderers=None, size=24):
@@ -523,7 +524,7 @@ def message(title, msg, window=None):
     # draw the accent lines in the title bar of the window
     lines_y = window.y
     lines_y += 6
-    for i in range(5):
+    for _ in range(5):
         lines_y += 3
         error_window.line(vec2(window.x, lines_y), vec2(window.w + 10, lines_y))
 
