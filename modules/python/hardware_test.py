@@ -2,7 +2,7 @@ import network
 from machine import Pin, Timer, ADC, I2C
 import time
 from pcf85063a import PCF85063A
-from badgeware import PixelFont, brushes, screen, shapes, WIDTH, HEIGHT
+import badgeware
 import powman
 import os
 import gc
@@ -30,12 +30,14 @@ E18 - PSRAM Test Failure
 display = ssd1680.SSD1680()
 display.speed(2)
 
-large_font = PixelFont.load("/system/assets/fonts/smart.ppf")
+WIDTH, HEIGHT = screen.width, screen.height
+
+large_font = rom_font.smart
 screen.font = large_font
 
-WHITE = brushes.color(0, 0, 3 << 6)
-BLACK = brushes.color(0, 0, 0 << 6)
-GRAY = brushes.color(0, 0, 1 << 6)
+WHITE = color.white
+BLACK = color.black
+GRAY = color.dark_grey
 
 CL = [Pin(0, Pin.OUT), Pin(1, Pin.OUT),
       Pin(2, Pin.OUT), Pin(3, Pin.OUT)]
@@ -110,9 +112,9 @@ class Tests:
             raise Exception("E17") from None
 
     def display_error(self, error):
-        screen.brush = WHITE
+        screen.pen = WHITE
         screen.clear()
-        screen.brush = BLACK
+        screen.pen = BLACK
         centre_text(str(error), (HEIGHT / 2) - 10)
         display.update()
 
@@ -225,9 +227,9 @@ class Tests:
         b.irq(self.exit_handler)
 
         # The test has passed now
-        screen.brush = WHITE
+        screen.pen = WHITE
         screen.clear()
-        screen.brush = BLACK
+        screen.pen = BLACK
         centre_text("PASS", 50)
         centre_text("Press B to sleep.", 80)
         display.update()
@@ -270,9 +272,9 @@ class Tests:
 
     def test_vbus(self):
 
-        screen.brush = WHITE
+        screen.pen = WHITE
         screen.clear()
-        screen.brush = BLACK
+        screen.pen = BLACK
         screen.text("< Remove USB to continue", 5, 80)
         display.update()
 
@@ -293,19 +295,19 @@ class Tests:
 
     def draw(self):
         # Clear screen and display title
-        screen.brush = WHITE
+        screen.pen = WHITE
         screen.clear()
-        screen.brush = BLACK
+        screen.pen = BLACK
 
         centre_text("Press all face buttons + HOME", 80)
 
         # Draw button presses
-        screen.brush = GRAY
+        screen.pen = GRAY
         for button in sorted(self.buttons):
             pressed = self.buttons[button][0]
             if not pressed:
                 x, y = self.buttons[button][1]
-                screen.draw(shapes.rounded_rectangle(x, y, 20, 20, 4))
+                screen.shape(shape.rounded_rectangle(x, y, 20, 20, 4))
 
         display.update()
 
