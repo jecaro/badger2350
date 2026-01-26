@@ -2,7 +2,7 @@ import network
 from machine import Pin, Timer, ADC, I2C
 import time
 from pcf85063a import PCF85063A
-import badgeware
+import badgeware #noqa F401
 import powman
 import os
 import gc
