@@ -2,16 +2,18 @@ import sys
 import os
 
 sys.path.insert(0, "/system/apps/clock")
+sys.path.insert(0, "/")
 os.chdir("/system/apps/clock")
 
 from badgeware import run, SpriteSheet, State, rtc
-import network
 import time
 import ntptime
 from daylightsaving import DaylightSavingPolicy, DaylightSaving
-from usermessage import user_message, center_text, bullet_list, stretch_text
+from usermessage import user_message, center_text, stretch_text
 from machine import RTC, Pin
 import math
+import secrets
+import wifi2 as wifi
 
 
 # Set the LED to light whenever the unit's active.
@@ -35,14 +37,10 @@ class DisplayType:
     sevenseg = 4
 
 
-WIFI_TIMEOUT = 60
-WIFI_PASSWORD = None
-WIFI_SSID = None
-REGION = None
-TIMEZONE = None
-wlan = None
-connected = False
-ticks_start = None
+secrets.require("REGION", "TIMEZONE")
+
+REGION = secrets.REGION
+TIMEZONE = secrets.TIMEZONE
 
 # Setting up default values for the first run, and loading in the state with the
 # user choices if the file's there.
@@ -152,66 +150,6 @@ def update_time(region, timezone):
     RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
     year, month, day, dow, hour, minute, second, dow = RTC().datetime()
     rtc.datetime((year, month, day, hour, minute, second, dow))
-
-    return True
-
-
-def _is_valid_details():
-    return all([WIFI_SSID, WIFI_PASSWORD, REGION]) and isinstance(TIMEZONE, int)
-
-
-def get_connection_details():
-    # Get WiFi details from secrets.py.
-
-    global WIFI_PASSWORD, WIFI_SSID, REGION, TIMEZONE
-
-    if _is_valid_details():
-        return True
-
-    try:
-        sys.path.insert(0, "/system")
-        from secrets import WIFI_PASSWORD, WIFI_SSID, REGION, TIMEZONE
-        sys.path.pop(0)
-    except ImportError as e:
-        print(e)
-        WIFI_PASSWORD = None
-        WIFI_SSID = None
-        REGION = None
-        TIMEZONE = None
-        return False
-
-    return _is_valid_details()
-
-
-def wlan_start():
-    global wlan, ticks_start, connected, WIFI_PASSWORD, WIFI_SSID
-
-    if ticks_start is None:
-        ticks_start = io.ticks
-
-    if connected:
-        return True
-
-    if wlan is None:
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-
-        if wlan.isconnected():
-            return True
-
-        wlan.connect(WIFI_SSID, WIFI_PASSWORD)
-
-        print("Connecting to WiFi...")
-
-        user_message("Please Wait!", ["Connecting to", "WiFi network"])
-
-    connected = wlan.isconnected()
-
-    if io.ticks - ticks_start < WIFI_TIMEOUT * 1000:
-        if connected:
-            return True
-    elif not connected:
-        return False
 
     return True
 
@@ -680,6 +618,11 @@ def write_settings():
     State.save("clock", state)
 
 
+# Background polling loop to keep Badger awake while WiFi is connecting
+def background_poll():
+    return wifi.tick()
+
+
 def update():
     # Main update loop.
 
@@ -695,17 +638,17 @@ def update():
     # If the year in the RTC is 2021 or earlier, we need to sync so it has the same effect as pressing B.
     # This starts the chain of connecting to the WiFi and pulling the correct time.
     elif io.BUTTON_B in io.pressed or time.gmtime()[0] <= 2021:
-        if get_connection_details():
-            if wlan_start():
-                if update_time(REGION, TIMEZONE) is False:
-                    user_message("Error!", ["Unable to get time", "from NTP server."])
-                else:
-                    user_message("Update", ["Updated time", "from NTP server."])
+        user_message("Please Wait!", ["Connecting to WiFi..."])
+        if wifi.connect():
+            poll(None)
+            if update_time(REGION, TIMEZONE) is False:
+                user_message("Error!", ["Unable to get time", "from NTP server."])
             else:
-                bullet_list("Connection Failed!", ["""Could not connect\nto the WiFi network.\n:-(""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
+                user_message("Update", ["Updated time", "from NTP server."])
         else:
-            bullet_list("Missing Details!", ["""Put your badge into\ndisk mode (tap\nRESET twice)""", """Edit 'secrets.py' to\nset WiFi details and\nyour local region.""", """Reload to see your\ncorrect local time!"""])
-            rtc.set_timer(10)
+            poll(background_poll)
+
+
     # And then we detect button presses and act accordingly.
     if io.BUTTON_UP in io.pressed or io.BUTTON_DOWN in io.pressed:
         state["dark_mode"] = not state["dark_mode"]
