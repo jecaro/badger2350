@@ -1,6 +1,6 @@
 import os
 import sys
-from badgeware import run
+from badgeware import run, State
 
 
 # Standalone bootstrap for finding app assets
@@ -12,6 +12,13 @@ sys.path.insert(0, "/system/apps/mass_storage")
 
 # Called once to initialise your app.
 def init():
+    state = {
+        "active": 0,
+        "running": "/system/apps/menu"
+    }
+    State.load("menu", state)
+    state["running"] = "/system/apps/menu"
+    State.modify("menu", state)
     import _msc.py   # noqa F401
 
 
