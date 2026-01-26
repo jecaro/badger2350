@@ -13,7 +13,7 @@ from usermessage import user_message, center_text, stretch_text
 from machine import RTC, Pin
 import math
 import secrets
-import wifi2 as wifi
+import wifi
 
 
 # Set the LED to light whenever the unit's active.
