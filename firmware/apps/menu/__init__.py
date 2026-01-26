@@ -22,6 +22,11 @@ state = {
 }
 State.load("menu", state)
 
+# If the initial state is out of range, revert to index 0
+if state["active"] >= len(apps):
+    state["active"] = 0
+    State.modify("menu", state)
+
 
 def update():
     global active, apps

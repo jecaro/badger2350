@@ -4,7 +4,7 @@ import os
 import sys
 
 import machine
-from badgeware import State, fatal_error, run
+from badgeware import State, fatal_error, run, file_exists
 
 
 def quit_to_launcher(pin):
@@ -26,13 +26,19 @@ state = {
 }
 State.load("menu", state)
 
-running_app = state["running"]
+app = state["running"]
 
 machine.Pin.board.BUTTON_HOME.irq(
     trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
 )
 
-app = running_app
+
+# Trying to launch an app that has been removed
+if not file_exists(app):
+    state["running"] = "/system/apps/menu"
+    State.modify("menu", state)
+    app = state["running"]
+
 
 sys.path.insert(0, app)
 try:
