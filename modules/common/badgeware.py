@@ -551,6 +551,10 @@ def message(title, msg, window=None):
     bounds.w -= 21
     bounds.h -= 35
 
+    screen.pen = color.black
+    error_window.shape(shape.rectangle(window.w - 44, window.h - 15, 32, 15).stroke(1))
+    screen.text("Okay", vec2(window.w - 40, window.h - 14))
+
     text_draw(error_window, msg, bounds=bounds)
 
 
