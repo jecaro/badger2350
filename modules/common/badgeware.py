@@ -551,9 +551,16 @@ def message(title, msg, window=None):
     bounds.w -= 21
     bounds.h -= 35
 
-    screen.pen = color.black
-    error_window.shape(shape.rectangle(window.w - 44, window.h - 15, 32, 15).stroke(1))
-    screen.text("Okay", vec2(window.w - 40, window.h - 14))
+    error_window.pen = color.dark_grey
+    error_window.shape(shape.rectangle((window.w - 45) + offset, (window.h - 15) + offset, 33, 15))
+
+    error_window.pen = color.white
+    error_window.shape(shape.rectangle(window.w - 45, window.h - 15, 33, 15))
+
+    error_window.pen = color.black
+    error_window.shape(shape.rectangle(window.w - 45, window.h - 15, 33, 15).stroke(1))
+
+    error_window.text("Okay", vec2(window.w - 39, window.h - 14))
 
     text_draw(error_window, msg, bounds=bounds)
 
