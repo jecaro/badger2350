@@ -576,6 +576,8 @@ def fatal_error(title, error):
     while io.pressed:
         io.poll()
 
+    State.delete("menu")
+
     machine.reset()
 
 
