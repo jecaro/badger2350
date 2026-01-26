@@ -8,7 +8,7 @@ def draw_background():
 
 def draw_header():
     # create animated header text
-    label = "BadgerOS v4.03"
+    label = "BadgeOS v4.03"
     w, _ = screen.measure_text(label)
     pos = ((screen.width / 2) - (w / 2), 1)
 
