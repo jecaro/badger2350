@@ -52,6 +52,8 @@ def update():
     if io.BUTTON_B in io.pressed:
         state["running"] = f"/system/apps/{apps.active.path}"
         State.modify("menu", state)
+        while io.BUTTON_B in io.pressed or io.BUTTON_B in io.held:
+            io.poll()
         return state["running"]
 
     ui.draw_background()
