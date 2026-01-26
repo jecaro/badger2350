@@ -1,5 +1,6 @@
 builtins = [
     "mode",
+    "poll",
     "FAST_UPDATE",
     "FULL_UPDATE",
     "MEDIUM_UPDATE",

@@ -12,6 +12,8 @@ import powman
 import ssd1680
 import builtins
 
+import board
+
 import picovector
 
 display = ssd1680.SSD1680()
@@ -426,6 +428,11 @@ def get_disk_usage(mountpoint="/"):
     return f_total_size, f_used, f_free
 
 
+def poll(fn):
+    global _poll
+    _poll = fn
+
+
 def mode(mode, force=False):
     global _current_mode
 
@@ -480,9 +487,15 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                     io.poll()
                     if io.pressed:
                         break
+                    if callable(_poll) and _poll():
+                        break
+                    if board.RTC_ALARM.value() == 0:
+                        rtc.clear_alarm_flag()
+                        rtc.clear_timer_flag()
+                        break
                     # put the unit to sleep if button input times out and the unit is not connected via USB
                     if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not VBUS_DETECT.value():
-                        powman.sleep()  # ???
+                        powman.sleep()
         finally:
             if on_exit:
                 on_exit()
@@ -646,6 +659,7 @@ DITHER = 1 << 8
 
 conversion_factor = 3.3 / 65536
 
+_poll = None
 _current_mode = MEDIUM_UPDATE
 mode(MEDIUM_UPDATE, True)
 
@@ -656,7 +670,7 @@ screen.pen = BG
 
 # Build in some badgeware helpers, so we don't have to "bw.lores" etc
 # note HIRES and LORES and mode are currently unused for Blinky
-for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "DITHER", "SpriteSheet", "load_font", "rom_font", "text_tokenise", "text_draw"):
+for k in ("mode", "poll", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "DITHER", "SpriteSheet", "load_font", "rom_font", "text_tokenise", "text_draw"):
     setattr(builtins, k, locals()[k])
 
 
