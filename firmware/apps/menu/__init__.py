@@ -63,9 +63,6 @@ def update():
     # draw label for active menu icon
     apps.draw_label()
 
-    # draw hints for the active page
-    apps.draw_pagination()
-
     return None
 
 
