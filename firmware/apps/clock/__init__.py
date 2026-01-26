@@ -618,11 +618,6 @@ def write_settings():
     State.save("clock", state)
 
 
-# Background polling loop to keep Badger awake while WiFi is connecting
-def background_poll():
-    return wifi.tick()
-
-
 def update():
     # Main update loop.
 
@@ -639,14 +634,14 @@ def update():
     # This starts the chain of connecting to the WiFi and pulling the correct time.
     elif io.BUTTON_B in io.pressed or time.gmtime()[0] <= 2021:
         user_message("Please Wait!", ["Connecting to WiFi..."])
-        if wifi.connect():
-            poll(None)
-            if update_time(REGION, TIMEZONE) is False:
-                user_message("Error!", ["Unable to get time", "from NTP server."])
-            else:
-                user_message("Update", ["Updated time", "from NTP server."])
+        wifi.connect()
+        # Block until WiFi is connected or an error occurs
+        while not wifi.tick():
+            pass
+        if update_time(REGION, TIMEZONE) is False:
+            user_message("Error!", ["Unable to get time", "from NTP server."])
         else:
-            poll(background_poll)
+            user_message("Update", ["Updated time", "from NTP server."])
 
 
     # And then we detect button presses and act accordingly.
