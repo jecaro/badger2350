@@ -494,7 +494,7 @@ def run(update, init=None, on_exit=None, auto_clear=True):
                         rtc.clear_timer_flag()
                         break
                     # put the unit to sleep if button input times out and the unit is not connected via USB
-                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not VBUS_DETECT.value():
+                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not VBUS_DETECT.value() and not callable(_poll):
                         powman.sleep()
         finally:
             if on_exit:
