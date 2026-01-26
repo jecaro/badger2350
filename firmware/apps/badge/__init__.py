@@ -31,7 +31,7 @@ for key in id_socials.keys():
 id_body = shape.rectangle(0, 0, 240, 155 )
 id_outline = shape.rectangle(0, 0, 240, 155).stroke(2)
 background = brush.pattern(color.black, color.white, 6)
-rear_view = True
+rear_view = False
 card_pos = (10, 10)
 pattern = 25
 
