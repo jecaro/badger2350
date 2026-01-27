@@ -44,7 +44,7 @@ target_include_directories(usermod_picovector INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_compile_definitions(usermod_picovector INTERFACE PICO=1)
+target_compile_definitions(usermod_picovector INTERFACE PICO=1 BADGER=1)
 
 target_link_libraries(usermod INTERFACE usermod_picovector pngdec hardware_interp)
 
