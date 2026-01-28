@@ -222,7 +222,7 @@ class Tests:
 
         except Exception as e:   # noqa BLE001
             self.display_error(e)
-            return
+            powman.sleep()
 
         b.irq(self.exit_handler)
 
