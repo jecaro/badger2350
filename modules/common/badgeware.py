@@ -548,7 +548,7 @@ def message(title, msg, window=None):
     bounds = error_window.clip
     bounds.y += 43
     bounds.x += 18
-    bounds.w -= 21
+    bounds.w -= 30
     bounds.h -= 35
 
     error_window.pen = color.dark_grey
