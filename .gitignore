@@ -44,3 +44,5 @@ board/version.py
 venv
 .vscode
 .DS_Store
+.ccls-cache/*
+/scratch
