@@ -10,6 +10,7 @@
         packages = [
           pkgs.mpremote
           pkgs.python3
+          pkgs.ruff
         ];
       };
     };
