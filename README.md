@@ -1,79 +1,63 @@
-# Badger 2350<!-- omit in toc -->
+# Badger 2350 (personal fork)
 
-A huge upgrade from the original Badger - launched four years ago - the new e-paper display delivers four crisp shades of grey for sharper images and clearer text.
+My fork of the [Badger 2350 firmware](https://github.com/pimoroni/badger2350), 
+with additional apps and a development environment.
 
-Get your very own Badger from [https://shop.pimoroni.com/products/badger-2350](https://shop.pimoroni.com/products/badger-2350)
+## Apps
 
-![Badger 2350 front](https://badgewa.re/static/images/badger_web_front.png)
+### mqttooth
 
-- [Specs](#specs)
-- [Meet The Badgeware Family](#meet-the-badgeware-family)
-- [Help](#help)
-  - [Updating/Reflashing Firmware](#updatingreflashing-firmware)
-  - [Installing Apps](#installing-apps)
-  - [Configuring WiFi](#configuring-wifi)
-  - [API Documentation](#api-documentation)
+<p align="center">
+  <img src="./images/mqttooth.jpg">
+</p>
 
-## Specs
+Simple dashboard to display current temperature and humidity. The badge 
+connects via Bluetooth to [`mqttooth`](https://github.com/jecaro/mqttooth), a 
+companion service that bridges MQTT sensors to BLE. See the `mqttooth` 
+[README.md](https://github.com/jecaro/mqttooth/) for more information about the 
+companion service and how to set it up.
 
-* 2.7" 264×176 greyscale e-paper display
-* RP2350 + 16MB flash + 8MB PSRAM
-* WiFi + Bluetooth 5.2
-* USB-C + 1,000mAh battery
-* User + system buttons
-* Four-zone rear lighting
-* "Den Tester" lanyard
+The app in in: [./firmware/apps/mqttooth](./firmware/apps/mqttooth)
 
-## Meet The Badgeware Family
+The app fetch periodically the temperature and humidity from the `mqttooth` 
+service, and displays it on the badge. To save battery, it only refreshes the 
+display if the change is significant. One can also trigger a refresh by 
+pressing the button `B`.
 
-* [Badger](https://github.com/pimoroni/badger2350) - 2.7" 264×176 greyscale e-paper
-* [Blinky](https://github.com/pimoroni/blinky2350) - 872 pixel LED display
-* [Tufty](https://github.com/pimoroni/tufty2350) - 2.8" 320×240 full-colour IPS LCD
+### GitHub badge
 
-More details at [https://badgewa.re](https://badgewa.re)
+<p align="center">
+  <img src="./images/github-recto.jpg">
+  <img src="./images/github-verso.jpg">
+</p>
 
-## Help
+A personal GitHub badge, using QR codes to easily share information.
 
-### Updating/Reflashing Firmware
+The app in in: [./firmware/apps/github](./firmware/apps/github)
 
-:warning: Our firmware comes in two flavours:
+## Development environment
 
-1. `badger-vX.X.X-micropython-with-filesystem` which will replace all the apps and software on your device with the defaults, and
+The development environment is set up using nix flakes. It brings into scope 
+`python`, `ruff` and `mpremote`. After installing `nix`, you can enter the 
+development environment with:
 
-2. `badger-vX.X.X-micropython.uf2` which will replace only the firmware.
+```bash
+$ nix develop
+```
 
-Pick your desired firmware image from the latest release at [https://github.com/pimoroni/badger2350/releases/latest](https://github.com/pimoroni/badger2350/releases/latest)
+For a fast development cycle, I recommend using `mpremote` to interact with the 
+device. First:
+- plug your badger to your computer
+- hit reset
 
-Then:
+Then, to run a python snippet on the device, you can use:
 
-* Connect your badge to your computer with a USB Type-C to USB A cable.
-* Turn your badge around so the back is facing you.
-* Press and hold the BOOT button towards the far left.
-* Briefly tap the RESET button to the right of BOOT.
-* A disk named "RP2350" should appear on your computer.
-* Drag and drop the firmware .uf2 onto this disk.
-* Your badge should update and reboot into the menu!
+```
+$ mpremote a0 exec "print('hello from badger')"
+```
 
-### Installing Apps
+Or to run a single file app:
 
-* Connect your badge to your computer with a USB Type-C to USB A cable.
-* Turn your badge around so the back is facing you.
-* Double-tap the RESET button, located toward the right on the left-hand side of the badge.
-* A disk named "Badger2350" should appear on your computer.
-* Copy your app directory into "apps".
-* *Safely Unmount* the disk from your computer. This may take a second.
-* Your badge should reboot into the menu!
-
-### Configuring WiFi
-
-* Connect your badge to your computer with a USB Type-C to USB A cable.
-* Turn your badge around so the back is facing you.
-* Double-tap the RESET button, located toward the right on the left-hand side of the badge.
-* A disk named "Badger2350" should appear on your computer.
-* Edit the file "secrets.py" and fill in your WiFi credentials.
-* *Safely Unmount* the disk from your computer. This may take a second.
-* Your badge should reboot into the menu!
-
-### API Documentation
-
-For comprehensive documentation of the Badgeware API, see: [https://badgewa.re/docs](https://badgewa.re/docs)
+```
+$ mpremote a0 run firmware/apps/badge/__init__.py
+```
