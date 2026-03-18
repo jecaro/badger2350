@@ -147,7 +147,9 @@ def draw_graph(
             py = graph_y + graph_h - int(y_ratio * graph_h)
 
             if prev_x is not None:
-                _thick_line(prev_x, prev_y, px, py)
+                # Skip lines that would draw over the icon/value area (top-left)
+                if not (px < 120 and py < y_offset + 35):
+                    _thick_line(prev_x, prev_y, px, py)
 
             prev_x, prev_y = px, py
 
@@ -168,7 +170,7 @@ def draw_current_value(icon, value: float | None, unit: str, y_offset: int) -> N
         value_text = "--.-"
 
     value_x = icon_x + 35
-    value_y = y_offset + 3
+    value_y = y_offset + 5
     screen.text(f"{value_text} {unit}", value_x, value_y)
 
 
