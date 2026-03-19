@@ -608,35 +608,31 @@ def display(state: AppState) -> None:
         display_simple(state)
     elif state.page == 1:
         display_charts(state)
+    state.update_count += 1
 
 
 def update() -> None:
     state = AppState.load()
 
-    result = asyncio.run(fetch_sensor_data())
-
-    now = rtc.datetime()
-    state.add_history_point(now, result)
-
-    old_page = state.page
     if badge.pressed(BUTTON_UP):
         state.page = (state.page - 1) % PAGE_COUNT
+        display(state)
     elif badge.pressed(BUTTON_DOWN):
         state.page = (state.page + 1) % PAGE_COUNT
-
-    if (
-        result != state.last_displayed
-        or old_page != state.page
-        or badge.pressed(BUTTON_B)
-    ):
         display(state)
-        state.update_count += 1
-        state.last_displayed = result
+
+    else:
+        result = asyncio.run(fetch_sensor_data())
+
+        now = rtc.datetime()
+        state.add_history_point(now, result)
+
+        if result != state.last_displayed or badge.pressed(BUTTON_B):
+            display(state)
+            state.last_displayed = result
 
     state.save()
-
     rtc.set_alarm(minutes=5)
-
     wait_for_button_or_alarm(timeout=5000)
 
 
