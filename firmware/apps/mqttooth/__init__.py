@@ -148,7 +148,9 @@ def draw_graph(
 
             if prev_x is not None:
                 # Skip lines that would draw over the icon/value area (top-left)
-                if not (px < 120 and py < y_offset + 35):
+                prev_in_zone = prev_x < 120 and prev_y < y_offset + 40
+                curr_in_zone = px < 120 and py < y_offset + 40
+                if not prev_in_zone and not curr_in_zone:
                     _thick_line(prev_x, prev_y, px, py)
 
             prev_x, prev_y = px, py
@@ -156,6 +158,11 @@ def draw_graph(
 
 def draw_current_value(icon, value: float | None, unit: str, y_offset: int) -> None:
     """Draw the icon and current value in the top-left of a graph section."""
+    # Uncomment to debug exclusion zone boundary
+    # screen.pen = color.black
+    # screen.line(0, y_offset + 40, 120, y_offset + 40)  # horizontal
+    # screen.line(120, y_offset, 120, y_offset + 40)  # vertical
+
     icon_x = 5
     icon_y = y_offset + 5
 
