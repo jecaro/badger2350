@@ -342,10 +342,12 @@ class AppState:
         update_count: int = 0,
         history: list[HistoryPoint] | None = None,
         last_displayed: SensorData | SensorError | GattError | None = None,
+        page: int = 0,
     ):
         self.update_count = update_count
         self.history = history if history is not None else []
         self.last_displayed = last_displayed
+        self.page = page
 
     def get_last_data(self) -> SensorData | None:
         """Latest successful sensor data."""
@@ -423,6 +425,7 @@ class AppState:
             "last_displayed": self._serialize_result(self.last_displayed)
             if self.last_displayed
             else None,
+            "page": self.page,
         }
 
     @classmethod
@@ -442,6 +445,7 @@ class AppState:
             update_count=state_dict.get("update_count", 0),
             history=history,
             last_displayed=last_displayed,
+            page=state_dict.get("page", 0),
         )
 
     @classmethod
@@ -501,7 +505,40 @@ def compute_y_ticks(y_min: int, y_max: int) -> list[int]:
     return [y_min, y_max]
 
 
-def display(state: AppState) -> None:
+def display_simple(state: AppState) -> None:
+    screen.pen = color.white
+    screen.clear()
+
+    data = state.get_last_data()
+    temperature = f"{data.temperature:.1f}" if data else "--.-"
+    humidity = f"{data.humidity:.1f}" if data else "--.-"
+
+    screen.font = rom_font.ignore
+    x = 70
+    offset_x = 50
+    y = 50
+
+    temperature_icon = image.load("thermometer.png")
+    screen.blit(temperature_icon, vec2(x, y))
+    screen.pen = color.black
+    screen.text(f"{temperature} °C", x + offset_x, y)
+
+    y += 50
+
+    humidity_icon = image.load("humidity.png")
+    screen.blit(humidity_icon, vec2(x, y))
+    screen.pen = color.black
+    screen.text(f"{humidity} %", x + offset_x, y)
+
+    error = state.get_last_error()
+    error_message = error.message() if error else None
+    draw_status_bar(badge.battery_level(), state.get_last_fetch_time(), error_message)
+
+    badge.mode(state.update_mode())
+    badge.update()
+
+
+def display_charts(state: AppState) -> None:
     screen.pen = color.white
     screen.clear()
 
@@ -556,6 +593,16 @@ def display(state: AppState) -> None:
     badge.update()
 
 
+PAGE_COUNT = 2
+
+
+def display(state: AppState) -> None:
+    if state.page == 0:
+        display_simple(state)
+    elif state.page == 1:
+        display_charts(state)
+
+
 def update() -> None:
     state = AppState.load()
 
@@ -564,7 +611,17 @@ def update() -> None:
     now = rtc.datetime()
     state.add_history_point(now, result)
 
-    if result != state.last_displayed or badge.pressed(BUTTON_B):
+    old_page = state.page
+    if badge.pressed(BUTTON_UP):
+        state.page = (state.page - 1) % PAGE_COUNT
+    elif badge.pressed(BUTTON_DOWN):
+        state.page = (state.page + 1) % PAGE_COUNT
+
+    if (
+        result != state.last_displayed
+        or old_page != state.page
+        or badge.pressed(BUTTON_B)
+    ):
         display(state)
         state.update_count += 1
         state.last_displayed = result
