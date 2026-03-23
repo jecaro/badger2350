@@ -2,6 +2,7 @@ import aioble
 import asyncio
 import bluetooth
 import os
+import powman
 import struct
 import sys
 
@@ -614,13 +615,19 @@ def display(state: AppState) -> None:
 def update() -> None:
     state = AppState.load()
 
+    # No bluetooth operations, when changing page or fresh start from menu.
     if badge.pressed(BUTTON_UP):
         state.page = (state.page - 1) % PAGE_COUNT
         display(state)
+
     elif badge.pressed(BUTTON_DOWN):
         state.page = (state.page + 1) % PAGE_COUNT
         display(state)
 
+    elif badge.wake_reason() != powman.WAKE_RTC and not badge.pressed():
+        display(state)
+
+    # Woken by RTC alarm or refresh with B. Fetch new data
     else:
         result = asyncio.run(fetch_sensor_data())
 
