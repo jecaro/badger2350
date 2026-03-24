@@ -8,7 +8,8 @@ with additional apps and a development environment.
 ### mqttooth
 
 <p align="center">
-  <img src="./images/mqttooth.jpg">
+  <img src="./images/mqttooth-simple.jpg">
+  <img src="./images/mqttooth-chart.jpg">
 </p>
 
 Simple dashboard to display current temperature and humidity. The badge 
@@ -21,8 +22,8 @@ The app in in: [./firmware/apps/mqttooth](./firmware/apps/mqttooth)
 
 The app fetch periodically the temperature and humidity from the `mqttooth` 
 service, and displays it on the badge. To save battery, it only refreshes the 
-display if the change is significant. One can also trigger a refresh by 
-pressing the button `B`.
+display if the change is significant. One can trigger a refresh by pressing the 
+button `B`. The layout can be changed by pressing `Up` or `Down`.
 
 ### GitHub badge
 
